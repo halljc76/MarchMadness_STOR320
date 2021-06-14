@@ -1,0 +1,38 @@
+---
+title: "Exploratory Data Analysis"
+author: "Carter Hall, Paul Charles, Luis Medrano, Corey Turral"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+cbb <- read.csv("./Data/cbb.csv")
+```
+
+# Categorical -- Conference, Posteason (Result), Seed
+
+# Categorical-Categorical Vis
+```{r}
+powerFive <- c("ACC", "SEC", "B10", "B12", "BE")
+pfc <- cbb %>% filter(CONF %in% powerFive & !is.na(SEED))
+pfc$SEED <- as.factor(pfc$SEED)
+
+ggplot(data = pfc) + geom_histogram(mapping = aes(y = reorder(SEED, desc(SEED))), stat = "count") + facet_wrap(CONF~.) + scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10)) + labs(title = "Appearances in NCAA MBB Tournament for Power 5 Conference By Seed*", subtitle = "From 2013-2019; Four Possible Seeds Per Year", caption = "* - 1-seeds are generally representative of teams more favorited to win the tournament that year. Seeds range from 1-16.", y = "Seed") 
+```
+
+# Categorical-Continuous Vis
+
+# Conference vs. ADJOE
+```{r}
+ggplot(data = pfc, mapping = aes(x = reorder(CONF, ADJOE, FUN = median), y = ADJOE)) + geom_boxplot() + labs(title = "Adjusted Offensive Efficiency of Power 5 Conferences in NCAA MBB Tournament", subtitle = "From 2013-2019 (inclusive)", x = "Conference", caption = "ADJOE: Adjusted Offensive Efficiency: Points Scored per 100 Possessions")
+```
+
+# Continuous-Continuous Vis
+```{r}
+cbb <- cbb %>% mutate(WR = round(W / G, 3))
+pfc <- cbb %>% filter(CONF %in% powerFive & !is.na(SEED))
+pfc$SEED <- as.factor(pfc$SEED)
+ggplot(data = cbb, mapping = aes(x = ADJOE, y = WR)) + geom_point() + 
+  geom_smooth(method = lm) + labs(title = "Relationship between Adjusted Offensive Efficiency and Win Rate of MBB Teams in NCAA Tournament", subtitle = "Data shown is of teams in tournaments from 2013-2019.", caption = "WR: Win Rate; ADJOE: Adjusted Offensive Efficiency: Points Scored per 100 Possessions")
+```
+
