@@ -9,3 +9,5 @@ Boilerplate data dictionary for any datasets in this folder.
 - 'cbb21.csv' - 2021 end-of-season data (needs to be updated with postseason results)
 
 - 'cbb21Postseason.csv' - 2021 postseason results (team, place)
+
+- 'gamesTo2019.csv' - 1985-2019 games
