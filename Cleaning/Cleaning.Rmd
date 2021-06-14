@@ -1,0 +1,22 @@
+---
+title: "Data Cleaning"
+output: html_notebook
+---
+
+```{r}
+cbb21 <- read.csv("./Data/cbb21.csv")
+cb21PS <- read.csv("./Data/cbb21Postseason.csv", header = FALSE)
+```
+
+```{r}
+cb21PS[1,1] <- "Baylor"
+colnames(cb21PS) <- c("TEAM", "POSTSEASON")
+cb21PS$TEAM <- gsub("State", "St.", cb21PS$TEAM)
+cb21PS$TEAM <- gsub("Uconn", "Connecticut", cb21PS$TEAM)
+cb21PS$TEAM <- gsub("UCSB", "UC Santa Barbara", cb21PS$TEAM)
+cb21PS$TEAM <- gsub("E Washington", "Eastern Washington", cb21PS$TEAM)
+
+cb21PS$TEAM <- str_trim(cb21PS$TEAM)
+
+write.csv(cb21PS, "./Data/cbb21Postseason.csv")
+```
