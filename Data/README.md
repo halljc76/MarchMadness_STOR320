@@ -10,7 +10,8 @@ Boilerplate data dictionary for any datasets in this folder.
 
 - 'cbb21.csv' - 2021 end-of-season data (needs to be updated with postseason results)
 
-**This dataset was compiled ourselves using the publicly-accessible tournament results.
+**This dataset was compiled ourselves using the publicly-accessible tournament results.**
+
 - 'cbb21Postseason.csv' - 2021 postseason results (team, place)
 
 **This dataset was compiled by Michael Roy and shared at this [link](https://data.world/michaelaroy/ncaa-tournament-results).**
