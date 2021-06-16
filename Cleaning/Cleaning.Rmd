@@ -3,12 +3,17 @@ title: "Data Cleaning"
 output: html_notebook
 ---
 
-```{r}
-cbb21 <- read.csv("./Data/cbb21.csv")
-cb21PS <- read.csv("./Data/cbb21Postseason.csv", header = FALSE)
-```
+# Reading in Data to Add Postseason Results to 2021 Data
 
 ```{r}
+cbb21 <- read.csv("../Data/cbb21.csv")
+cb21PS <- read.csv("../Data/cbb21Postseason.csv")
+```
+
+```{r eval = F}
+# This chunk does not need to be executed! It is here in case the dataset is lost 
+# and must be recompiled. (Execute it on original data only!)
+
 cb21PS[1,1] <- "Baylor"
 colnames(cb21PS) <- c("TEAM", "POSTSEASON")
 cb21PS$TEAM <- gsub("State", "St.", cb21PS$TEAM)
@@ -18,5 +23,139 @@ cb21PS$TEAM <- gsub("E Washington", "Eastern Washington", cb21PS$TEAM)
 
 cb21PS$TEAM <- str_trim(cb21PS$TEAM)
 
-write.csv(cb21PS, "./Data/cbb21Postseason.csv")
+write.csv(cb21PS, "../Data/cbb21Postseason.csv") 
 ```
+
+```{r}
+cb21PS <- cb21PS %>% select(-c("X"))
+cbb21 <- cbb21 %>% left_join(cb21PS, by = c("TEAM"))
+
+write.csv(cbb21, "../Data/cbb21.csv")
+```
+
+# Adding Postseason Results to 2013-19 Data
+
+```{r}
+# Run this ONLY on RAW DATA from the original Kaggle link/GitHub repo!
+addResult <- function(data) {
+  data$POSTSEASON <- ifelse(is.na(data$POSTSEASON), 
+                           "No Appearance", data$POSTSEASON) %>% 
+                    as.factor() %>% fct_infreq() 
+  data <- data %>% rename(RESULT = POSTSEASON) %>% mutate(POSTSEASON = ifelse(RESULT != "No Appearance", 1, 0))
+
+  return(data)
+}
+
+addResultMain <- function() {
+  for (i in c(13:19,21)) {
+    data <- read.csv(file = paste("../Data/cbb", i, ".csv", sep = "")) 
+    data <- addResult(data)
+    data <- cbind(data, rep.int(2000 + i, nrow(data)))
+    colnames(data)[ncol(data)] <- "YEAR"
+    write.csv(data, paste("../Data/cbb", i, ".csv", sep = ""), row.names = FALSE)
+  }
+}
+```
+
+# Making 'Games' Dataset
+```{r}
+games <- read.csv("../Data/gamesTo2019.csv")
+games21 <- read.csv("../Data/2021PostseasonScores.csv", header = FALSE)
+```
+
+```{r}
+games <- games %>% filter(Year %in% c(2013:2019)) %>% select(-c("Region.Number", "Round", "Region.Name"))
+games21 <- cbind(games21, rep.int(2021, nrow(games21)))
+colnames(games21) <- c("Seed1", "Team1", "Score1", "Seed2", "Team2", "Score2", "Year")
+colnames(games) <- c("Year", "Seed1", "Score1", "Team1", "Team2", "Score2", "Seed2")
+games21[1,1] <- "1"
+
+games21 <- games21 %>% mutate(Seed1 = as.integer(Seed1),
+                              Seed2 = as.integer(Seed2))
+
+allGames <- rbind(games, games21) %>% mutate(ScoreDiff = Score1 - Score2, Upset = ifelse(Seed1 > Seed2, 1, 0)) 
+
+write.csv(allGames, "../Data/gamesTo2021.csv", row.names = FALSE)
+```
+
+```{r}
+data <- data.frame()
+for (i in c(13:19,21)) {
+  data <- rbind(data, read.csv(paste("../Data/cbb", i, ".csv", sep = "")))
+}
+data %>% select(-c("X", "X.1")) %>% write.csv("../Data/cbbAll.csv", row.names = FALSE)
+```
+
+```{r eval = F}
+teamsAll <- read.csv("../Data/cbbAll.csv")
+teams <- teamsAll$TEAM
+
+games <- read.csv("../Data/gamesTo2021.csv") 
+
+for (i in 1:nrow(games)) {
+  t1 <- games$Team1[i]
+  t2 <- games$Team2[i]
+  
+  if (!(t1 %in% teams)) {
+    print(t1)
+  }
+  if (!(t2 %in% teams)) {
+    print(t2)
+  }
+  
+  games$Team1[i] <- str_trim(t1)
+  games$Team2[i] <- str_trim(t2)
+}
+
+games$Team1 <- gsub("State", "St.", games$Team1)
+games$Team2 <- gsub("State", "St.", games$Team2)
+games$Team1 <- gsub("St$", "St.", games$Team1)
+games$Team2 <- gsub("St$", "St.", games$Team2)
+games$Team1 <- gsub("St ", "St. ", games$Team1)
+games$Team2 <- gsub("St ", "St. ", games$Team2)
+games$Team1 <- gsub(" F ", " F. ", games$Team1)
+games$Team2 <- gsub(" F ", " F. ", games$Team2)
+games$Team1 <- gsub("St. Louis", "Saint Louis", games$Team1)
+games$Team2 <- gsub("St. Louis", "Saint Louis", games$Team2)
+games$Team1 <- gsub("St. Marys", "Saint Mary's", games$Team1)
+games$Team2 <- gsub("St. Marys", "Saint Mary's", games$Team2)
+games$Team1 <- gsub("St. Josephs", "Saint Joseph's", games$Team1)
+games$Team2 <- gsub("St. Josephs", "Saint Joseph's", games$Team2)
+games$Team1 <- gsub("St. Johns", "St. John's", games$Team1)
+games$Team2 <- gsub("St. Johns", "St. John's", games$Team2)
+games$Team1 <- gsub("Miami", "Miami FL", games$Team1)
+games$Team2 <- gsub("Miami", "Miami FL", games$Team2)
+games$Team1 <- gsub("Miami FL FL", "Miami FL", games$Team1)
+games$Team2 <- gsub("Miami FL FL", "Miami FL", games$Team2)
+games$Team1 <- gsub("Ole Miss", "Mississippi", games$Team1)
+games$Team2 <- gsub("Ole Miss", "Mississippi", games$Team2)
+games$Team1 <- gsub("NC", "North Carolina", games$Team1)
+games$Team2 <- gsub("NC", "North Carolina", games$Team2)
+games$Team1 <- gsub("Wisconsin Milwaukee", "Milwaukee", games$Team1)
+games$Team2 <- gsub("Wisconsin Milwaukee", "Milwaukee", games$Team2)
+games$Team1 <- gsub("Wisconsin Green Bay", "Green Bay", games$Team1)
+games$Team2 <- gsub("Wisconsin Green Bay", "Green Bay", games$Team2)
+games$Team1 <- gsub("Cal ", "UC ", games$Team1)
+games$Team2 <- gsub("Cal ", "UC ", games$Team2)
+games$Team1 <- gsub("UC Poly", "Cal Poly", games$Team1)
+games$Team2 <- gsub("UC Poly", "Cal Poly", games$Team2)
+games$Team1 <- gsub("UC St.", "Cal St.", games$Team1)
+games$Team2 <- gsub("UC St.", "Cal St.", games$Team2)
+games$Team1 <- gsub("UNorth Carolina", "UNC", games$Team1)
+games$Team2 <- gsub("UNorth Carolina", "UNC", games$Team2)
+games$Team1 <- gsub("Central Florida", "UCF", games$Team1)
+games$Team2 <- gsub("Central Florida", "UCF", games$Team2)
+games$Team1 <- gsub("Mount Saint Mary's", "Mount St. Mary's", games$Team1)
+games$Team2 <- gsub("Mount Saint Mary's", "Mount St. Mary's", games$Team2)
+games$Team1 <- gsub("Middle Tennessee St.", "Middle Tennessee", games$Team1)
+games$Team2 <- gsub("Middle Tennessee St.", "Middle Tennessee", games$Team2)
+games$Team1 <- gsub("Pennsylvania", "Penn", games$Team1)
+games$Team2 <- gsub("Pennsylvania", "Penn", games$Team2)
+games$Team1 <- gsub("Uconn", "Connecticut", games$Team1)
+games$Team2 <- gsub("Uconn", "Connecticut", games$Team2)
+
+games <- games %>% mutate(ID = paste(Team1, Team2, sep = "-"))
+
+write.csv(games, "../Data/gamesTo2021.csv", row.names = FALSE)
+```
+

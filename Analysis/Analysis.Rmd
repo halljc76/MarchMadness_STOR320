@@ -1,0 +1,84 @@
+---
+title: "More Analysis :)"
+output: html_notebook
+---
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse) 
+library(bestglm)
+library(MASS)
+library(leaps)
+library(corrplot)
+```
+
+```{r}
+teamsAll <- read.csv("../Data/cbbAll.csv")
+games <- read.csv("../Data/gamesTo2021.csv")
+```
+
+```{r}
+ggplot(data = filter(teamsAll, POSTSEASON == 1 & RESULT != "R68"), mapping = aes(x = ADJDE, y = ADJOE, color = RESULT)) + geom_point() + facet_wrap(YEAR ~ ., nrow = 2)
+```
+
+```{r}
+getMatchup <- function(data, n1, y1, n2, y2) {
+  t1 <- data %>% filter(data$TEAM == n1 & data$YEAR == y1)
+  t2 <- data %>% filter(data$TEAM == n2 & data$YEAR == y2)
+  
+  matchup <- rbind(t1, t2)
+  return(matchup)
+}
+
+
+getDifferentials <- function(data, n1, y1, n2, y2) {
+  matchup <- getMatchup(data, n1, y1, n2, y2)
+  
+  ret <- data.frame()
+  
+  vec <- c()
+  names <- c()
+  for (i in 5:21) {
+    vec[i - 3] <- round(matchup[1,i] - matchup[2,i], 3)
+    names[i - 3] <- paste(colnames(matchup)[i], "DIFF", sep = "_")
+  }
+  names[1] <- "ID"
+  vec[1] <- paste(n1, n2, sep = "-")
+  ret <- rbind(ret, vec)
+  colnames(ret) <- names
+  return(ret)
+}
+```
+
+```{r}
+addDifferentials <- function() {
+  # Source teams from 'games'
+  # Get records from 'teamsAll' 
+  # Make differentials dataset
+  # Join 'games', differentials dataset via ID
+  
+  differentials <- data.frame()
+  for (i in 1:nrow(games)) {
+    diff <- getDifferentials(teamsAll, games$Team1[i], games$Year[i],
+                             games$Team2[i], games$Year[i])
+    differentials <- rbind(differentials, diff)
+  }
+  
+  return(games %>% left_join(differentials, by = "ID"))
+}
+
+gwd <- addDifferentials()
+cols <- c()
+j = 1
+for (i in 1:ncol(gwd)) {
+  if (str_detect(colnames(gwd)[i], "DIFF")) {
+    cols[j] = i
+    j = j + 1
+  }
+}
+
+gwd[cols] <- sapply(gwd[cols],as.numeric)
+gwd <- gwd %>% filter(ID != "Oregon-VCU") # Game Was Never Played (COVID)
+write.csv(gwd, "../Data/gamesTo2021UPDATED.csv")
+```
+
+
