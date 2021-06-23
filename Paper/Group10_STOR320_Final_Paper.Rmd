@@ -332,68 +332,68 @@ The following table, beginning on the next page, shows the rankings of the 43 au
 | Dayton             | 3   | 3   | 1   | 2.333333 | 4    | 1    |
 | San Diego St.      | 5   | 2   | 1   | 2.666667 | 5    | 2    |
 | Florida St.        | 3   | 4   | 1   | 2.666667 | 6    | 2    |
-| Duke               | 3   | 3   | 3   | 3        | 7    | 2    |
-| Creighton          | 5   | 3   | 1   | 3        | 8    | 2    |
-| Villanova          | 5   | 3   | 1   | 3        | 9    | 3    |
+| Creighton          | 5   | 3   | 1   | 3        | 7    | 2    |
+| Villanova          | 5   | 3   | 1   | 3        | 8    | 2    |
+| Duke               | 4   | 3   | 3   | 3.333333 | 9    | 3    |
 | Maryland           | 6   | 3   | 1   | 3.333333 | 10   | 3    |
-| Michigan St.       | 6   | 3   | 3   | 4        | 11   | 3    |
+| Michigan St.       | 5   | 3   | 3   | 3.666667 | 11   | 3    |
 | Louisville         | 5   | 5   | 3   | 4.333333 | 12   | 3    |
-| Oregon             | 5   | 5   | 3   | 4.333333 | 13   | 4    |
-| Kentucky           | 6   | 4   | 3   | 4.333333 | 14   | 4    |
-| Virginia           | 5   | 5   | 3   | 4.333333 | 15   | 4    |
-| Ohio St.           | 6   | 5   | 3   | 4.666667 | 16   | 4    |
-| Penn St.           | 4   | 5   | 5   | 4.666667 | 17   | 5    |
+| Penn St.           | 3   | 5   | 5   | 4.333333 | 13   | 4    |
+| Oregon             | 5   | 5   | 3   | 4.333333 | 14   | 4    |
+| Kentucky           | 6   | 4   | 3   | 4.333333 | 15   | 4    |
+| Virginia           | 5   | 5   | 3   | 4.333333 | 16   | 4    |
+| Ohio St.           | 6   | 5   | 3   | 4.666667 | 17   | 5    |
 | Auburn             | 6   | 6   | 3   | 5        | 18   | 5    |
-| West Virginia      | 5   | 6   | 5   | 5.333333 | 19   | 5    |
-| Butler             | 6   | 7   | 3   | 5.333333 | 20   | 5    |
+| Butler             | 6   | 7   | 3   | 5.333333 | 19   | 5    |
+| West Virginia      | 6   | 6   | 5   | 5.666667 | 20   | 5    |
 | Seton Hall         | 9   | 5   | 3   | 5.666667 | 21   | 6    |
 | Michigan           | 5   | 8   | 5   | 6        | 22   | 6    |
-| Arizona            | 3   | 5   | 11  | 6.333333 | 23   | 6    |
-| BYU                | 6   | 7   | 6   | 6.333333 | 24   | 6    |
+| Houston            | 7   | 7   | 5   | 6.333333 | 23   | 6    |
+| Arizona            | 3   | 5   | 11  | 6.333333 | 24   | 6    |
 | Wisconsin          | 9   | 7   | 3   | 6.333333 | 25   | 7    |
-| Houston            | 8   | 7   | 5   | 6.666667 | 26   | 7    |
-| Illinois           | 7   | 8   | 5   | 6.666667 | 27   | 7    |
-| Iowa               | 8   | 8   | 5   | 7        | 28   | 7    |
-| Rutgers            | 3   | 8   | 11  | 7.333333 | 29   | 8    |
-| Oklahoma           | 10  | 7   | 6   | 7.666667 | 30   | 8    |
-| Wichita St.        | 5   | 7   | 11  | 7.666667 | 31   | 8    |
-| Saint Mary's       | 11  | 7   | 6   | 8        | 32   | 8    |
+| Illinois           | 7   | 8   | 5   | 6.666667 | 26   | 7    |
+| Iowa               | 8   | 8   | 5   | 7        | 27   | 7    |
+| Oklahoma           | 9   | 7   | 6   | 7.333333 | 28   | 7    |
+| BYU                | 11  | 7   | 6   | 8        | 29   | 8    |
+| Rutgers            | 5   | 8   | 11  | 8        | 30   | 8    |
+| Saint Mary's       | 11  | 7   | 6   | 8        | 31   | 8    |
+| Cincinnati         | 5   | 8   | 11  | 8        | 32   | 8    |
 | USC                | 5   | 8   | 11  | 8        | 33   | 9    |
 | Colorado           | 7   | 8   | 11  | 8.666667 | 34   | 9    |
-| LSU                | 8   | 8   | 11  | 9        | 35   | 9    |
-| Providence         | 6   | 10  | 11  | 9        | 36   | 9    |
-| Cincinnati         | 9   | 8   | 11  | 9.333333 | 37   | 10   |
-| Utah St.           | 7   | 11  | 11  | 9.666667 | 38   | 10   |
-| Richmond           | 11  | 7   | 11  | 9.666667 | 39   | 10   |
-| Texas Tech         | 9   | 9   | 13  | 10.33333 | 40   | 10   |
-| Marquette          | 11  | 10  | 11  | 10.66667 | 41   | 11   |
-| Indiana            | 10  | 11  | 11  | 10.66667 | 42   | 11   |
-| Florida            | 11  | 11  | 11  | 11       | 43   | 11   |
-| Purdue             | 10  | 10  | 16  | 12       | 1    | 11   |
-| Georgia Tech       | 5   | 16  | 16  | 12.33333 | 2    | 11   |
-| Washington         | 5   | 16  | 16  | 12.33333 | 3    | 11   |
-| Texas              | 10  | 16  | 11  | 12.33333 | 4    | 12   |
-| Saint Louis        | 9   | 16  | 13  | 12.66667 | 5    | 12   |
-| Northern Iowa      | 11  | 16  | 11  | 12.66667 | 6    | 12   |
-| East Tennessee St. | 12  | 16  | 11  | 13       | 7    | 12   |
-| Liberty            | 11  | 16  | 14  | 13.66667 | 8    | 13   |
-| Tennessee          | 9   | 16  | 16  | 13.66667 | 9    | 13   |
-| Arkansas           | 11  | 16  | 15  | 14       | 10   | 13   |
-| Oklahoma St.       | 10  | 16  | 16  | 14       | 11   | 13   |
-| St. John's         | 10  | 16  | 16  | 14       | 12   | 14   |
-| VCU                | 10  | 16  | 16  | 14       | 13   | 14   |
-| San Francisco      | 11  | 16  | 16  | 14.33333 | 14   | 14   |
-| Davidson           | 11  | 16  | 16  | 14.33333 | 15   | 14   |
-| Arizona St.        | 16  | 16  | 11  | 14.33333 | 16   | 15   |
-| Rhode Island       | 16  | 16  | 11  | 14.33333 | 17   | 15   |
-| Stephen F. Austin  | 16  | 16  | 11  | 14.33333 | 18   | 15   |
-| SMU                | 12  | 16  | 16  | 14.66667 | 19   | 15   |
-| Northern Colorado  | 13  | 16  | 16  | 15       | 20   | 16   |
-| Memphis            | 16  | 16  | 13  | 15       | 21   | 16   |
-| Yale               | 16  | 16  | 13  | 15       | 22   | 16   |
-| South Carolina     | 14  | 16  | 16  | 15.33333 | 23   | 16   |
-| Iowa St.           | 15  | 16  | 16  | 15.66667 | 24   | 16   |
-| Louisiana Tech     | 16  | 16  | 15  | 15.66667 | 25   | 16   |
+| Providence         | 6   | 10  | 11  | 9        | 35   | 9    |
+| LSU                | 8   | 8   | 11  | 9        | 36   | 9    |
+| Utah St.           | 7   | 11  | 11  | 9.666667 | 37   | 10   |
+| Richmond           | 11  | 7   | 11  | 9.666667 | 38   | 10   |
+| Texas Tech         | 9   | 9   | 13  | 10.33333 | 39   | 10   |
+| Marquette          | 11  | 10  | 11  | 10.66667 | 40   | 10   |
+| Indiana            | 10  | 11  | 11  | 10.66667 | 41   | 11   |
+| Florida            | 11  | 11  | 11  | 11       | 42   | 11   |
+| Memphis            | 5   | 16  | 13  | 11.33333 | 1    | 11   |
+| Wichita St.        | 16  | 7   | 11  | 11.33333 | 2    | 11   |
+| Purdue             | 10  | 10  | 16  | 12       | 3    | 11   |
+| Syracuse           | 10  | 11  | 16  | 12.33333 | 4    | 11   |
+| Washington         | 5   | 16  | 16  | 12.33333 | 5    | 12   |
+| Arizona St.        | 10  | 16  | 11  | 12.33333 | 6    | 12   |
+| Northern Iowa      | 11  | 16  | 11  | 12.66667 | 7    | 12   |
+| Xavier             | 12  | 10  | 16  | 12.66667 | 8    | 12   |
+| Rhode Island       | 11  | 16  | 11  | 12.66667 | 9    | 13   |
+| East Tennessee St. | 12  | 16  | 11  | 13       | 10   | 13   |
+| Yale               | 11  | 16  | 13  | 13.33333 | 11   | 13   |
+| Saint Louis        | 12  | 16  | 13  | 13.66667 | 12   | 13   |
+| Liberty            | 11  | 16  | 14  | 13.66667 | 13   | 14   |
+| Tennessee          | 9   | 16  | 16  | 13.66667 | 14   | 14   |
+| Arkansas           | 11  | 16  | 15  | 14       | 15   | 14   |
+| Oklahoma St.       | 10  | 16  | 16  | 14       | 16   | 14   |
+| Connecticut        | 10  | 16  | 16  | 14       | 17   | 15   |
+| St. John's         | 10  | 16  | 16  | 14       | 18   | 15   |
+| Akron              | 11  | 16  | 15  | 14       | 19   | 15   |
+| Northern Colorado  | 11  | 16  | 16  | 14.33333 | 20   | 15   |
+| Notre Dame         | 11  | 16  | 16  | 14.33333 | 21   | 16   |
+| Alabama            | 11  | 16  | 16  | 14.33333 | 22   | 16   |
+| Texas              | 16  | 16  | 11  | 14.33333 | 23   | 16   |
+| Stephen F. Austin  | 16  | 16  | 11  | 14.33333 | 24   | 16   |
+| Davidson           | 13  | 16  | 16  | 15       | 25   | 16   |
+| Iowa St.           | 15  | 16  | 16  | 15.66667 | 26   | 16   |
 \begin{center} Figure 15: Rankings and Seeds of Simulated 2020 Tournament Teams \end{center}
 
 \subsection{Tournament Simulation}
@@ -410,87 +410,87 @@ The regression model initially contained all of the aforementioned differences, 
 
 Figure 7 includes sample differences from the games depicted in Figure 1 (the figures are snapshots of the same dataset).
 
-| ADJOE\_DIFF | ADJDE\_DIFF | BARTHAG\_DIFF | EFG\_O\_DIFF | EFG\_D\_DIFF |
-| ----------- | ----------- | ------------- | ------------ | ------------ |
-| 25.3        | \-11.2      | 0.628         | 4.9          | \-0.4        |
-| 17.2        | \-7.2       | 0.378         | 4.3          | \-2.8        |
-| 3.6         | \-10.1      | 0.188         | \-5.1        | \-1.7        |
-| 5.5         | \-7.8       | 0.219         | 1.1          | 0.1          |
+| ADJOE\_DIFF | ADJDE\_DIFF | BARTHAG\_DIFF | EFG\_O\_DIFF | EFG\_D\_DIFF | 
+| ----------- | ----------- | ------------- | ------------ | ------------ | 
+| 25.3        | \-11.2      | 0.628         | 4.9          | \-0.4        | 
+| 17.2        | \-7.2       | 0.378         | 4.3          | \-2.8        | 
+| 3.6         | \-10.1      | 0.188         | \-5.1        | \-1.7        | 
 | 5.5         | \-7.8       | 0.219         | 1.1          | 0.1          | 
+| 2.3         | 0           | 0.025         | \-0.5        | \-1.9        |  
 \begin{center} Figure 16: Differenced Statistics for Games from Figure 1 (most columns not depicted due to cutoff). \end{center}
 
 The difference statistics were created and passed to the regression model for each simulated game. Figure 17 shows the results of simulating each round of the tournament, including the victor and the difference in score (negative values indicate an "upset" victory).
 
 | ID                          | DIFF  | TEAM          | ROUND                          |
 | --------------------------- | ----- | ------------- | ------------------------------ |
-| Washington-Louisiana Tech   | 4.1   | Washington    | First Four                     |
-| Georgia Tech-Yale           | 5.2   | Georgia Tech  | First Four                     |
-| Kansas-Northern Colorado    | 12.2  | Kansas        | East - Round of 64             |
-| San Diego St.-Arizona St.   | 6.5   | San Diego St. | East - Round of 64             |
-| Villanova-St. John's        | 1.6   | Villanova     | East - Round of 64             |
-| Oregon-Liberty              | 8.9   | Oregon        | East - Round of 64             |
-| Penn St.-Texas              | 8     | Penn St.      | East - Round of 64             |
-| Seton Hall-Marquette        | 2.6   | Seton Hall    | East - Round of 64             |
-| Wisconsin-Cincinnati        | 2.8   | Wisconsin     | East - Round of 64             |
-| Rutgers-USC                 | 6.5   | Rutgers       | East - Round of 64             |
-| Kansas-Rutgers              | 7.1   | Kansas        | East - Round of 32             |
+| Syracuse-Iowa St.           | 5.7   | Syracuse      | First Four                     |
+| Purdue-Texas                | 9.6   | Purdue        | First Four                     |
+| Kansas-Notre Dame           | 9.5   | Kansas        | East - Round of 64             |
+| San Diego St.-Connecticut   | 4     | San Diego St. | East - Round of 64             |
+| Duke-Liberty                | 11.8  | Duke          | East - Round of 64             |
+| Penn St.-Rhode Island       | 7.8   | Penn St.      | East - Round of 64             |
+| Ohio St.-Washington         | 5.2   | Ohio St.      | East - Round of 64             |
+| Seton Hall-Indiana          | 4     | Seton Hall    | East - Round of 64             |
+| Wisconsin-Utah St.          | 3.1   | Wisconsin     | East - Round of 64             |
+| BYU-USC                     | 9.3   | BYU           | East - Round of 64             |
+| Kansas-BYU                  | 4.3   | Kansas        | East - Round of 32             |
 | San Diego St.-Wisconsin     | 3.4   | San Diego St. | East - Round of 32             |
-| Villanova-Seton Hall        | 0.6   | Villanova     | East - Round of 32             |
-| Oregon-Penn St.             | 1.8   | Oregon        | East - Round of 32             |
-| Kansas-Oregon               | 4.7   | Kansas        | East - Sweet 16                |
-| San Diego St.-Villanova     | 3.5   | San Diego St. | East - Sweet 16                |
-| Kansas-San Diego St.        | 4.9   | Kansas        | East - Elite 8                 |
-| Dayton-Iowa St.             | 10    | Dayton        | West - Round of 64             |
-| Creighton-SMU               | 9.7   | Creighton     | West - Round of 64             |
-| Louisville-Davidson         | 4.8   | Louisville    | West - Round of 64             |
-| Ohio St.-Oklahoma St.       | 7.5   | Ohio St.      | West - Round of 64             |
-| Butler-East Tennessee St.   | 6.8   | Butler        | West - Round of 64             |
-| BYU-Purdue                  | 0.6   | BYU           | West - Round of 64             |
-| Iowa-Texas Tech             | \-3.2 | Texas Tech    | West - Round of 64             |
-| Saint Mary's-Providence     | \-3.4 | Providence    | West - Round of 64             |
-| Dayton-Providence           | 5     | Dayton        | West - Round of 32             |
-| Creighton-Texas Tech        | 1.6   | Creighton     | West - Round of 32             |
-| Louisville-BYU              | 1.2   | Louisville    | West - Round of 32             |
-| Ohio St.-Butler             | 5.7   | Ohio St.      | West - Round of 32             |
-| Dayton-Ohio St.             | 3.7   | Dayton        | West - Sweet 16                |
-| Creighton-Louisville        | 3.4   | Creighton     | West - Sweet 16                |
-| Dayton-Creighton            | 3     | Dayton        | West - Elite 8                 |
-| Baylor-South Carolina       | 9.2   | Baylor        | Midwest - Round of 64          |
-| Duke-Stephen F. Austin      | 13.1  | Duke          | Midwest - Round of 64          |
-| Michigan St.-San Francisco  | 7.7   | Michigan St.  | Midwest - Round of 64          |
-| Virginia-Arkansas           | \-2   | Arkansas      | Midwest - Round of 64          |
-| West Virginia-Northern Iowa | 8.3   | West Virginia | Midwest - Round of 64          |
-| Arizona-Florida             | 4.1   | Arizona       | Midwest - Round of 64          |
-| Illinois-Richmond           | 2.4   | Illinois      | Midwest - Round of 64          |
-| Wichita St.-LSU             | 0.4   | Wichita St.   | Midwest - Round of 64          |
-| Baylor-Wichita St.          | 9.1   | Baylor        | Midwest - Round of 32          |
-| Duke-Illinois               | 7.5   | Duke          | Midwest - Round of 32          |
-| Michigan St.-Arizona        | 0.7   | Michigan St.  | Midwest - Round of 32          |
-| Arkansas-West Virginia      | \-1.4 | West Virginia | Midwest - Round of 32          |
-| Baylor-West Virginia        | 5.4   | Baylor        | Midwest - Sweet 16             |
-| Duke-Michigan St.           | 2.8   | Duke          | Midwest - Sweet 16             |
-| Baylor-Duke                 | 2.5   | Baylor        | Midwest - Elite 8              |
-| Gonzaga-Memphis             | 12.3  | Gonzaga       | South - Round of 64            |
-| Florida St.-Rhode Island    | 6.5   | Florida St.   | South - Round of 64            |
-| Maryland-VCU                | \-0.5 | VCU           | South - Round of 64            |
-| Kentucky-Tennessee          | 1.7   | Kentucky      | South - Round of 64            |
-| Auburn-Saint Louis          | 0.4   | Auburn        | South - Round of 64            |
-| Michigan-Indiana            | 5.2   | Michigan      | South - Round of 64            |
-| Houston-Utah St.            | 5.5   | Houston       | South - Round of 64            |
-| Oklahoma-Colorado           | \-0.3 | Colorado      | South - Round of 64            |
-| Gonzaga-Colorado            | 9.1   | Gonzaga       | South - Round of 32            |
-| Florida St.-Houston         | \-0.7 | Houston       | South - Round of 32            |
-| VCU-Michigan                | \-0.9 | Michigan      | South - Round of 32            |
-| Kentucky-Auburn             | 3.1   | Kentucky      | South - Round of 32            |
-| Gonzaga-Kentucky            | 9.5   | Gonzaga       | South - Sweet 16               |
-| Houston-Michigan            | 2     | Houston       | South - Sweet 16               |
-| Gonzaga-Houston             | 5.5   | Gonzaga       | South - Elite 8                |
+| Duke-Seton Hall             | 5.9   | Duke          | East - Round of 32             |
+| Penn St.-Ohio St.           | \-0.9 | Ohio St.      | East - Round of 32             |
+| Kansas-Ohio St.             | 3.1   | Kansas        | East - Sweet 16                |
+| San Diego St.-Duke          | \-1.7 | Duke          | East - Sweet 16                |
+| Kansas-Duke                 | 1.9   | Kansas        | East - Elite 8                 |
+| Dayton-Davidson             | 8.6   | Dayton        | West - Round of 64             |
+| Villanova-Northern Colorado | 6.4   | Villanova     | West - Round of 64             |
+| Louisville-Oklahoma St.     | 6.2   | Louisville    | West - Round of 64             |
+| Virginia-Saint Louis        | \-0.1 | Saint Louis   | West - Round of 64             |
+| West Virginia-Xavier        | 5     | West Virginia | West - Round of 64             |
+| Arizona-Wichita St.         | 7     | Arizona       | West - Round of 64             |
+| Oklahoma-Marquette          | \-0.7 | Marquette     | West - Round of 64             |
+| Cincinnati-LSU              | 0.4   | Cincinnati    | West - Round of 64             |
+| Dayton-Cincinnati           | 9.1   | Dayton        | West - Round of 32             |
+| Villanova-Marquette         | 1.9   | Villanova     | West - Round of 32             |
+| Louisville-Arizona          | \-0.3 | Arizona       | West - Round of 32             |
+| Saint Louis-West Virginia   | -3.3  | West Virginia | West - Round of 32             |
+| Dayton-West Virginia        | 5.5   | Dayton        | West - Sweet 16                |
+| Villanova-Arizona           | \-3   | Arizona       | West - Sweet 16                |
+| Dayton-Arizona              | 3.4   | Dayton        | West - Elite 8                 |
+| Baylor-Stephen F. Austin    | 14.3  | Baylor        | Midwest - Round of 64          |
+| Creighton-Akron             | 11.6  | Creighton     | Midwest - Round of 64          |
+| Michigan St.-Arkansas       | 5.5   | Michigan St.  | Midwest - Round of 64          |
+| Kentucky-Yale               | 5.6   | Kentucky      | Midwest - Round of 64          |
+| Butler-Northern Iowa        | 5.6   | Butler        | Midwest - Round of 64          |
+| Houston-Memphis             | 8.1   | Houston       | Midwest - Round of 64          |
+| Iowa-Texas Tech             | \-3.2 | Texas Tech    | Midwest - Round of 64          |
+| Saint Mary's-Providence     | \-3.4 | Providence    | Midwest - Round of 64          |
+| Baylor-Providence           | 5     | Baylor        | Midwest - Round of 32          |
+| Creighton-Texas Tech        | 1.6   | Creighton     | Midwest - Round of 32          |
+| Michigan St.-Houston        | 2.5   | Michigan St.  | Midwest - Round of 32          |
+| Kentucky-Butler             | 0.2   | Kentucky      | Midwest - Round of 32          |
+| Baylor-Kentucky             | 9.1   | Baylor        | Midwest - Sweet 16             |
+| Creighton-Michigan St.      | 2.4   | Creighton     | Midwest - Sweet 16             |
+| Baylor-Creighton            | 2.9   | Baylor        | Midwest - Elite 8              |
+| Gonzaga-Alabama             | 8.7   | Gonzaga       | South - Round of 64            |
+| Florida St.-St. John's      | 2.1   | Florida St.   | South - Round of 64            |
+| Maryland-Tennessee          | 0.9   | Maryland      | South - Round of 64            |
+| Oregon-East Tennessee St.   | 9.5   | Oregon        | South - Round of 64            |
+| Auburn-Arizona St.          | 1.1   | Auburn        | South - Round of 64            |
+| Michigan-Florida            | 1.6   | Michigan      | South - Round of 64            |
+| Illinois-Richmond           | 2.4   | Illinois      | South - Round of 64            |
+| Rutgers-Colorado            | 2.4   | Rutgers       | South - Round of 64            |
+| Gonzaga-Rutgers             | 8     | Gonzaga       | South - Round of 32            |
+| Florida St.-Illinois        | 2.9   | Florida St.   | South - Round of 32            |
+| Maryland-Michigan           | \-2.8 | Michigan      | South - Round of 32            |
+| Oregon-Auburn               | 6.9   | Oregon        | South - Round of 32            |
+| Gonzaga-Oregon              | 5.7   | Gonzaga       | South - Sweet 16               |
+| Florida St.-Michigan        | 0     | Florida St.   | South - Sweet 16               |
+| Gonzaga-Florida St.         | 7.5   | Gonzaga       | South - Elite 8                |
 | Kansas-Dayton               | 0.6   | Kansas        | Final Four (East vs. West)     |
 | Gonzaga-Baylor              | 1.6   | Gonzaga       | Final Four (South vs. Midwest) |
 | Kansas-Gonzaga              | 0.4   | Kansas        | Championship Game              |
 \begin{center} Figure 17: Results of Simulating 2020 Tournament \end{center}
 
-Of particular interest are the games in which the regression model predicted an upset victory; there are a number of them occurring in the First Round (the "Round of 64"), one of emphasis being No. 10 Texas Tech's victory over No. 7 Iowa in the West Region. Over time, however, *higher seeds* were predicted to prevail, with all four one-seeds reaching the Final Four games and Kansas emerging as the Champion over Gonzaga (another astonishing runner-up finish for Gonzaga!). The authors would like to acknowledge this conclusion as an interesting one, considering that Gonzaga has reached the title game twice in the last 4 tournaments, losing most recently in 2021 to Baylor, and four years prior to North Carolina [in the Tar Heels' "Redemption Season", as many newspapers soon nicknamed it]. 
+Of particular interest are the games in which the regression model predicted an upset victory; there are a number of them occurring in the First Round (the "Round of 64"), one of emphasis being Arizona's victory over Villanova. Over time, however, *higher seeds* were predicted to prevail, with all four one-seeds reaching the Final Four games and Kansas emerging as the Champion over Gonzaga (another astonishing runner-up finish for Gonzaga!). The authors would like to acknowledge this conclusion as an interesting one, considering that Gonzaga has reached the title game twice in the last 4 tournaments, losing most recently in 2021 to Baylor, and four years prior to North Carolina [in the Tar Heels' "Redemption Season", as many newspapers soon nicknamed it]. 
 
 \section{Conclusion}
 
