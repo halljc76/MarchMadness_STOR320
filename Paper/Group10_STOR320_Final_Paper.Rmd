@@ -290,7 +290,7 @@ where $TP$ signifies "True Positive," $FN$ "False Negative," and the like.
 ![](../Data/Images/svm_gg.png)
 \begin{center} Figure 12: Probabilities of Postseason Berths, 2013-2019 and 2021) \end{center}
 
-As evidenced by Figures 11 and 12, the SVM was confident in many of its classifications of teams' eligibility for postseason appearances, so much so that it failed to identify an adequate-sized field when validated on data from 2020. To combat this shortcoming, any results marking a team eligible for an appearance were coupled with the necessary number of *low-confidence* predictions of a team *not* making it into the postseason (e.g., as 46 teams were automatically selected, 22 were chosen among those initially not selected). 
+As evidenced by Figures 11 and 12, the SVM was confident in many of its classifications of teams' eligibility for postseason appearances, so much so that it failed to identify an adequate-sized field when validated on data from 2020. To combat this shortcoming, any results marking a team eligible for an appearance were coupled with the necessary number of *low-confidence* predictions of a team *not* making it into the postseason (e.g., as 43 teams were automatically selected, 25 were chosen among those initially not selected). 
 
 **KNN**
 
