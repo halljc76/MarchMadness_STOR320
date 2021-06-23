@@ -11,15 +11,11 @@ All of the following packages **should** be used.
 
 ```{r warning = FALSE, message = FALSE}
 library(readr)
-library(MASS)
-library(bestglm)
-library(leaps)
-library(corrplot)
+library(stats)
 library(tidyverse)
 library(e1071)
 library(caTools)
 library(class)
-library(neuralnet)
 ```
 
 # Imports
@@ -92,8 +88,6 @@ for (cost in costs) {
 }
 
 colnames(ret) <- c("Cost", "Gamma", "Acc", "Sens", "Prec")
-# dir.create("../Data/Results")
-write.csv(ret, "../Data/Results/SVM_PB_HP.csv", row.names = FALSE)
 ```
 
 
@@ -338,7 +332,16 @@ test[,1:17] <- scale(test[,1:17])
 ```{r}
 new_test <- cbb20 %>% mutate(SOS = ifelse(is.na(SOS), mean(na.omit(SOS)), SOS))
 
-knn_pb_2020 <- knn(train[,1:19], scale(new_test[,2:20]), cl = factor(train$POSTSEASON), k = 36, prob = TRUE)
+ret <- data.frame()
+
+for (k in 1:60) {
+  temp_knn <- knn(train[,1:19], scale(new_test[,2:20]), cl = factor(train$POSTSEASON), k = k, prob = TRUE)
+  ret <- rbind(ret, c(k, mean_error(test$POSTSEASON, temp_knn)))
+}
+
+colnames(ret) <- c("k", "CCE")
+
+knn_pb_2020 <- knn(train[,1:19], scale(new_test[,2:20]), cl = factor(train$POSTSEASON), k = 41, prob = TRUE)
 
 if (table(knn_pb_2020)[2] < 68) {
   needed <- 68 - table(knn_pb_2020)[2]
@@ -354,7 +357,7 @@ if (table(knn_pb_2020)[2] < 68) {
 
 train <- allTournYr %>% select(c(1:21, 23:26)) %>% mutate(WR = W / G) %>% select(-c(2:4,23:24)) %>% filter(!is.na(SEED))
 
-knn_seed_2020 <- knn(train[,c(2:18,20:21)], knn_field_2020[,2:20], cl = factor(train$SEED), k = 6)
+knn_seed_2020 <- knn(train[,c(2:18,20:21)], knn_field_2020[,2:20], cl = factor(train$SEED), k = 18)
 
 knn_field_2020 <- cbind(knn_field_2020, knn_seed_2020)
 colnames(knn_field_2020)[21] <- "Seed"
@@ -619,4 +622,39 @@ tourney <- rbind(
 )
 
 write.csv(tourney, "../Data/tourneySimulated.csv", row.names = FALSE)
+```
+
+# Presentation: EDA Section
+
+```{r}
+gwd <- read.csv("../Data/gamesTo2021UPDATED.csv")
+allTournYr <- read.csv("../Data/cbbAll.csv")
+cbb20 <- read.csv("../Data/cbb20.csv")
+bpi <- read.csv("../Data/SOSData.csv")
+
+allTournYr <- allTournYr %>% left_join(bpi, by = c("TEAM", "YEAR"))
+cbb20 <- cbb20 %>% left_join(filter(bpi, YEAR == 2020), by = "TEAM") %>% select(-c("YEAR"))
+
+# Lots of Imputing -- Some Teams Did Not Have BPI Records for 1-2 Years
+# The imputed values are the mean SOS for the same-seeded teams over the years.
+# For teams that did NOT have seeds, I imputed a value well below any other SOS in the dataset.
+allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & allTournYr$SEED == 13, 0.5022333, allTournYr$SOS))
+allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & is.na(allTournYr$SEED), 0.35, allTournYr$SOS))
+
+berth <- allTournYr %>% select(c(3:21, 24:26)) %>% mutate(WR = W / G) %>% select(-c(1:2,21))
+berth <- cbind(berth[,1:17], berth[,19:20], berth[,18])
+colnames(berth)[20] <- c("POSTSEASON")
+```
+
+```{r}
+library(GGally)
+
+vars = c("ADJOE", "ADJDE", "ORB", "TOR", "WR")
+data1 <- berth[,c(vars)]
+drop_na(data1)
+ggpairs(data1, progress = FALSE, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "density")
+        )
+ggsave("../Data/Images/corr_dens_plot.png")
 ```
