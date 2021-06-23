@@ -1,0 +1,181 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+
+tournament <- read.csv("../Data/tournamentFINAL.csv")
+cbb20 <- read.csv("../Data/cbb20.csv") %>% select(-c("RK"))
+gwd <- read.csv("../Data/gamesTo2021UPDATED.csv") 
+```
+
+```{r}
+getDifferentials <- function(data) {
+  matchup <- data
+  ret <- data.frame()
+  
+  vec <- c()
+  names <- c()
+  for (i in 5:21) {
+    vec[i - 3] <- round(matchup[1,i] - matchup[2,i], 3)
+    names[i - 3] <- paste(colnames(matchup)[i], "DIFF", sep = "_")
+  }
+  names[1] <- "ID"
+  vec[1] <- paste(matchup$TEAM[1], matchup$TEAM[2], sep = "-")
+  ret <- rbind(ret, vec)
+  colnames(ret) <- names
+  return(ret)
+}
+```
+
+
+```{r}
+first_four_11 <- tournament %>% filter(Seed == 11) %>% sample_n(size = 2)
+first_four_16 <- tournament %>% filter(Seed == 16) %>% sample_n(size = 2)
+
+first_four_1 <- rbind(first_four_11[1,], first_four_16[1,]) %>% select(-c("KNN":"Rank"))
+first_four_2 <- rbind(first_four_11[2,], first_four_16[2,]) %>% select(-c("KNN":"Rank"))
+```
+
+```{r}
+ff_matchup1 <- rbind(cbb20 %>% filter(TEAM == first_four_1$TEAM[1]),
+                     cbb20 %>% filter(TEAM == first_four_1$TEAM[2])) 
+ff_matchup2 <- rbind(cbb20 %>% filter(TEAM == first_four_2$TEAM[1]),
+                     cbb20 %>% filter(TEAM == first_four_2$TEAM[2]))
+
+ff_matchup1_diff <- getDifferentials(ff_matchup1)
+ff_matchup2_diff <- getDifferentials(ff_matchup2)
+
+round_of_64 <- tournament[-c(which(tournament$TEAM %in% first_four_11$TEAM | 
+                      tournament$TEAM %in% first_four_16$TEAM)),]
+
+makeRegions <- function(data, i) {
+  ret <- data.frame()
+  for (j in 1:16) {
+    ret <- rbind(ret, 
+                 cbb20 %>% filter(TEAM == (data %>% filter(Seed == j))$TEAM[i]))
+  }
+  return(ret)
+}
+
+east <- makeRegions(round_of_64, 1)
+south <- makeRegions(round_of_64, 2)
+midwest <- makeRegions(round_of_64, 3)
+west <- makeRegions(round_of_64, 4)
+```
+
+```{r}
+makeMatchups <- function(region) {
+  ret <- data.frame()
+  for (i in 0:((nrow(region)/2) - 1)) {
+    ret <- rbind(ret, getDifferentials(rbind(region[i + 1,], region[nrow(region)-i,])))
+  }
+  
+  ret[,2:ncol(ret)] <- ret[,2:ncol(ret)] %>% mutate_if(is.character, as.numeric)
+  
+  return(ret)
+}
+
+east_R64 <- makeMatchups(east)
+south_R64 <- makeMatchups(south)
+midwest_R64 <- makeMatchups(midwest)
+west_R64 <- makeMatchups(west)
+```
+
+```{r}
+diffs <- gwd[,c(8,11:27)]
+
+scoreDiffMod <- glm(formula = ScoreDiff ~ ADJOE_DIFF + ADJDE_DIFF + TORD_DIFF + 
+    WAB_DIFF, data = diffs)
+
+simulate <- function(games, name) {
+  diffs <- predict.lm(scoreDiffMod, games)
+  splits <- strsplit(games$ID, split = "-")
+  teams <- c()
+  
+  for (i in 1:length(splits)) {
+    if (diffs[i] > 0) {
+      teams[i] <- splits[[i]][1]
+    }
+    else {
+      teams[i] <- splits[[i]][2]
+    }
+  }
+  
+  ret <- data.frame(cbind(games$ID, round(diffs, 1), teams, rep(name, each = i)))
+  colnames(ret) <- c("ID", "DIFF", "TEAM")
+  return(ret)
+}
+
+updateRegions <- function(data) {
+  ret <- data.frame()
+  for (i in 1:nrow(data)) {
+    ret <- rbind(ret, cbb20 %>% filter(TEAM == data$TEAM[i]))
+  }
+  return(ret)
+}
+ff_matchup1_diff[,2:ncol(ff_matchup1_diff)] <- ff_matchup1_diff[,2:ncol(ff_matchup1_diff)] %>% mutate_if(is.character, as.numeric)
+ff_matchup2_diff[,2:ncol(ff_matchup2_diff)] <- ff_matchup2_diff[,2:ncol(ff_matchup2_diff)] %>% mutate_if(is.character, as.numeric)
+
+first_four1 <- simulate(ff_matchup1_diff, "First Four")
+first_four2 <- simulate(ff_matchup2_diff, "First Four")
+
+east_Round1 <- simulate(east_R64, "East - Round of 64")
+east_Round2 <- simulate(makeMatchups(updateRegions(east_Round1)), "East - Round of 32")
+east_Round3 <- simulate(makeMatchups(updateRegions(east_Round2)), "East - Sweet 16")
+east_final <- simulate(makeMatchups(updateRegions(east_Round3)), "East - Elite 8")
+
+west_Round1 <- simulate(west_R64, "West - Round of 64")
+west_Round2 <- simulate(makeMatchups(updateRegions(west_Round1)), "West - Round of 32")
+west_Round3 <- simulate(makeMatchups(updateRegions(west_Round2)), "West - Sweet 16")
+west_final <- simulate(makeMatchups(updateRegions(west_Round3)), "West - Elite 8")
+
+midwest_Round1 <- simulate(midwest_R64, "Midwest - Round of 64")
+midwest_Round2 <- simulate(makeMatchups(updateRegions(midwest_Round1)), "Midwest - Round of 32")
+midwest_Round3 <- simulate(makeMatchups(updateRegions(midwest_Round2)), "Midwest - Sweet 16")
+midwest_final <- simulate(makeMatchups(updateRegions(midwest_Round3)), "Midwest - Elite 8")
+
+south_Round1 <- simulate(south_R64, "South - Round of 64")
+south_Round2 <- simulate(makeMatchups(updateRegions(south_Round1)), "South - Round of 32")
+south_Round3 <- simulate(makeMatchups(updateRegions(south_Round2)), "South - Sweet 16")
+south_final <- simulate(makeMatchups(updateRegions(south_Round3)), "South - Elite 8")
+
+final_four1 <- simulate(makeMatchups(updateRegions(rbind(east_final, west_final))),
+                        "Final Four (East vs. West)")
+final_four2 <- simulate(makeMatchups(updateRegions(rbind(south_final, midwest_final))),
+                        "Final Four (South vs. Midwest)")
+
+championship <- simulate(makeMatchups(updateRegions(rbind(final_four1, final_four2))),
+                         "Championship Game")
+```
+
+```{r}
+tourney <- rbind(
+  first_four1,
+  first_four2,
+  east_Round1,
+  east_Round2,
+  east_Round3,
+  east_final,
+  west_Round1,
+  west_Round2,
+  west_Round3,
+  west_final,
+  midwest_Round1,
+  midwest_Round2,
+  midwest_Round3,
+  midwest_final,
+  south_Round1,
+  south_Round2,
+  south_Round3,
+  south_final,
+  final_four1,
+  final_four2,
+  championship
+)
+
+write.csv(tourney, "../Data/tourneySimulated.csv", row.names = FALSE)
+```
+

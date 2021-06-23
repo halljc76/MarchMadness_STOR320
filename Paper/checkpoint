@@ -1,0 +1,2 @@
+model_checkpoint_path: "seed_model_weights.txt"
+all_model_checkpoint_paths: "seed_model_weights.txt"

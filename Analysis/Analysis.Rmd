@@ -9,6 +9,9 @@ library(bestglm)
 library(MASS)
 library(leaps)
 library(corrplot)
+library(e1071)
+library(caTools)
+set.seed(2021)
 ```
 
 ```{r}
@@ -79,6 +82,24 @@ for (i in 1:ncol(gwd)) {
 gwd[cols] <- sapply(gwd[cols],as.numeric)
 gwd <- gwd %>% filter(ID != "Oregon-VCU") # Game Was Never Played (COVID)
 write.csv(gwd, "../Data/gamesTo2021UPDATED.csv")
+```
+
+```{r}
+upsetPred <- gwd[,c(9,11:27)]
+upsetPred$Upset <- as.factor(upsetPred$Upset)
+split = sample.split(upsetPred$Upset, SplitRatio = 0.8)
+
+train = subset(upsetPred, split == TRUE)
+test = subset(upsetPred, split == FALSE)
+
+train[,2:18] <- scale(train[,2:18])
+test[,2:18] <- scale(test[,2:18])
+
+classifier <- svm(formula = Upset ~ ., data = train, type = 'C-classification', kernel = 'linear')
+
+y_pred <- predict(classifier, newdata = test[2:18])
+
+table(test[,1], y_pred)
 ```
 
 

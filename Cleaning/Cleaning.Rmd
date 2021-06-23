@@ -3,9 +3,13 @@ title: "Data Cleaning"
 output: html_notebook
 ---
 
+**NOTE: Many of the code chunks here DO NOT NEED TO BE RUN AGAIN! I wrote all results to .csv files to use in the main files. Everything here worked for the intended purpose and has not been altered afterwards.**
+
 # Reading in Data to Add Postseason Results to 2021 Data
 
 ```{r}
+library(tidyverse)
+library(rvest)
 cbb21 <- read.csv("../Data/cbb21.csv")
 cb21PS <- read.csv("../Data/cbb21Postseason.csv")
 ```
@@ -158,4 +162,3 @@ games <- games %>% mutate(ID = paste(Team1, Team2, sep = "-"))
 
 write.csv(games, "../Data/gamesTo2021.csv", row.names = FALSE)
 ```
-

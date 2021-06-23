@@ -1,0 +1,53 @@
+\section{Simulating the 2020 Tournament}
+
+As the world grinded to a halt in March of 2020, college basketball, which had 
+been preparing for conference tournaments and the "Big Dance," as the tournament
+to which the entire season culminates is coloquially referred, stopped alongside 
+it. The cancellation brought about speculation of who would have comprised the 
+elusive fields of 68, what "Cinderella stories" would have been, and who would
+have emerged the Champion. 
+
+Fortunately, advancements in machine learning and classification techniques, 
+along with their practical applications in the blossoming field of data science,
+afford the ability to re-create college basketball's greatest tournament. The 
+following sections will be dedicated to the discussion of how the 2020 NCAA D1 MBB
+Tournament can, and will, be simulated. The first section will be dedicated to 
+the definition of the aforementioned "field of 68" teams, along with relevant
+terminology and slang phrases used to discuss the results of such tournaments. 
+Next, the development of classification tools to structure the tournament
+field will be discussed, which include methods such as Support Vector Machines (SVM),
+K-Nearest Neighbors (KNN) or K-Means Clustering algorithms, and the use of 
+Artifical Neural Networks (ANN). Finally, the same methods will be appropriated 
+to creating methods of determining the victor of a particular matchup. These 
+two facets comprise how the tournament progresses.
+
+\subsection{Relevant Terminology}
+
+Before discussing how any classification methods work or their respective performances, a framework for understanding them must be established, especially for audiences who are not acclimated nor familiar with the college basketball environment in recent years (i.e since 2011, when the 'First Four' games were included to broaden the field from 64 to 68 teams). Therefore, let the following list serve as a guide to the words and phrases repeatedly used throughout this analysis:
+
+* *Field*: This is a coloquial term referencing the entire scope of teams who receive an invitation to the tournament. 
+
+* *Automatic [Bid]*: This term refers to teams who are conference champions within their contemporaneous and respective tournaments. Conference champions receive an invitation to the tournament, no matter from where they originate.
+
+* *At-Large*: This term refers to teams who received an invitation to the tournament but were not automatically entered; a committee is responsible for determining these teams.
+
+* *Seed*: A team's ranking within their region/pool, ranging from 1 (Best) to 16 (Worst).
+
+* *Region*: The tournament is divided into four regions, and thus four of each seed enter the first round, dubbed the 'Round of 64.' (Six '11-seeds' and '16-seeds' are chosen, but four of each enter the 'First Four' games, likely determined by a committee.)
+
+* *Upset*: Such refers to a game in which the result is a significantly lower-seeded team defeating a high-seeded team (e.g., see Duke-Lehigh in 2012, Duke-Mercer in 2014, Virginia-UMBC in 2019, Ohio State-Oral Roberts in 2021).
+
+Other terms, such as the names given to different rounds of the tournament, should be self-explanatory; that is, the number in any respective name (aside of the Championship Round) indicates the number of remaining teams.
+
+\subsection{The Field of 68}
+
+Since 2011, in which the tournament has been held included 68 teams who shared one common goal: "Win or Go Home." But before such goals can be realized, they first are made aware of their initial opponent. A committee is appointed (as to who exactly comprises said group, the authors are unsure) to carry out the selection process, which involves the assignment of seeds 1-16 to teams based on a number of statistics (e.g., Strength of Schedule, or SOS, which is a ranking given to identify the team(s) with the most difficult slate of games over the entire season). Four teams are allotted each seed, with the aforementioned explanation of two additional seeds being offered to fill out the first games that are played the day before the tournament is scheduled to begin. As a result, "1-seed" teams play "16-seed" opponents, "2-seed" teams play "15-seed" opponents, and so on. Teams are then split into four regions, where each region is a microcosm consisting of a single team seeded 1-16. The winners of each region arrive at the 'Final Four' round, and the winners of those games compete for the title.
+
+\subsection{Methods: Seed Prediction}
+
+Accurately structuring any tournament field can be difficult, and March Madness is no exception. Bracketologists (such as Joe Lunardi), individuals who employ analysis of historical records and current performances to predict fields, labor throughout the season to communicate to the public their opinions on who will reach the postseason. This section allows the authors to assume this role (and, when the time comes, hopefully win their next office or family bracket competitions) with the help of aforementioned classification techniques. 
+
+The goal of this subsection is to structure the field of 68 teams that would have hypothetically competed for the championship. Such is a two-step process: first, the field will be generated by determining worthiness for a postseason berth. Afterwards, teams will be seeded according to a separate set of classifiers.
+
+
+

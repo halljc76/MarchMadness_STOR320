@@ -1,0 +1,155 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(rvest)
+
+
+url = "https://www.warrennolan.com/basketball/2013/sos"
+data13 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div[2]/div[2]/div[3]/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2014/sos"
+data14 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div[2]/div[2]/div[3]/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2015/sos"
+data15 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div[2]/div[2]/div[3]/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2016/sos"
+data16 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div[2]/div[2]/div[3]/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2017/sos"
+data17 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div/div[2]/div[3]/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2018/sos"
+data18 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div/div[2]/div[3]/div/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2019/sos"
+data19 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div/div[2]/div[3]/div/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2020/sos"
+data20 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div/div[2]/div[3]/div/table') %>% html_table(fill=T)
+
+url = "https://www.warrennolan.com/basketball/2021/sos"
+data21 <- url %>% read_html() %>% html_node(xpath = '/html/body/div[4]/div/div[2]/div[3]/div/table') %>% html_table(fill=T)
+
+head(data13)
+colnames(data13) <- data13[1,]
+data13 <- data13[2:nrow(data13),]
+
+head(data14)
+colnames(data14) <- data14[1,]
+data14 <- data14[2:nrow(data14),]
+
+head(data15)
+colnames(data15) <- data15[1,]
+data15 <- data15[2:nrow(data15),]
+
+head(data16)
+colnames(data16) <- data16[1,]
+data16 <- data16[2:nrow(data15),2:ncol(data16)]
+
+head(data17)
+colnames(data17) <- data17[1,]
+data17 <- data17[2:nrow(data17),2:ncol(data17)]
+
+head(data18)
+data18 <- data18[,2:ncol(data18)]
+
+head(data19)
+data19 <- data19[,2:ncol(data19)]
+
+head(data20)
+data20 <- data20[,2:ncol(data20)]
+
+head(data21)
+data21 <- data21[,2:ncol(data21)]
+
+data13 <- na.omit(data13) 
+data14 <- na.omit(data14)
+data15 <- na.omit(data15)
+data16 <- na.omit(data16)
+data17 <- na.omit(data17)
+data18 <- na.omit(data18)
+data19 <- na.omit(data19)
+data20 <- na.omit(data20)
+data21 <- na.omit(data21)
+
+data13 <- data13[,1:2]
+data14 <- data14[,1:2]
+data15 <- data15[,1:2]
+data16 <- data16[,1:2]
+data17 <- data17[,1:2]
+data18 <- data18[,1:2]
+data19 <- data19[,1:2]
+data20 <- data20[,1:2]
+data21 <- data21[,1:2]
+
+data13 <- cbind(data13, rep(2013, nrow(data13)))
+data14 <- cbind(data14, rep(2014, nrow(data14)))
+data15 <- cbind(data15, rep(2015, nrow(data15)))
+data16 <- cbind(data16, rep(2016, nrow(data16)))
+data17 <- cbind(data17, rep(2017, nrow(data17)))
+data18 <- cbind(data18, rep(2018, nrow(data18)))
+data19 <- cbind(data19, rep(2019, nrow(data19)))
+data20 <- cbind(data20, rep(2020, nrow(data20)))
+data21 <- cbind(data21, rep(2021, nrow(data21)))
+
+colnames(data13)[3] <- "Year"
+colnames(data14)[3] <- "Year"
+colnames(data15)[3] <- "Year"
+colnames(data16)[3] <- "Year"
+colnames(data17)[3] <- "Year"
+colnames(data18)[3] <- "Year"
+colnames(data19)[3] <- "Year"
+colnames(data20)[3] <- "Year"
+colnames(data21)[3] <- "Year"
+
+bpi <- rbind(data13, data14, data15, data16, data17, data18, data19, data20, data21)
+write.csv(bpi, "../Data/SOSData.csv", row.names = FALSE)
+```
+
+```{r}
+
+colnames(bpi)[1] <- "TEAM"
+colnames(bpi)[3] <- "YEAR"
+
+bpi$TEAM <- gsub(" State", " St.", bpi$TEAM)
+bpi$TEAM <- gsub("Miami-Ohio", "Miami OH", bpi$TEAM)
+bpi$TEAM <- gsub("Miami (FL)", "Miami FL", bpi$TEAM)
+bpi$TEAM <- gsub("Miami$", "Miami FL", bpi$TEAM)
+bpi$TEAM <- gsub("Miami (OH)", "Miami OH", bpi$TEAM)
+bpi$TEAM <- gsub("Saint Mary's College", "Saint Mary's", bpi$TEAM)
+bpi$TEAM <- gsub("Mount Saint Mary's", "Mount St. Mary's", bpi$TEAM)
+bpi$TEAM <- gsub("Ole Miss", "Mississippi", bpi$TEAM)
+bpi$TEAM <- gsub("Long Island", "LIU Brooklyn", bpi$TEAM)
+bpi$TEAM <- gsub("Loyola-Chicago", "Loyola Chicago", bpi$TEAM)
+bpi$TEAM <- gsub("Illinois-Chicago", "Illinois Chicago", bpi$TEAM)
+bpi$TEAM <- gsub("Long Island", "LIU Brooklyn", bpi$TEAM)
+bpi$TEAM <- gsub("Saint Bonaventure", "St. Bonaventure", bpi$TEAM)
+bpi$TEAM <- gsub("Arkansas-Pine Bluff", "Arkansas Pine Bluff", bpi$TEAM)
+bpi$TEAM <- gsub("Arkansas-Little Rock", "Arkansas Little Rock", bpi$TEAM)
+bpi$TEAM <- gsub("South Carolina Upstate", "USC Upstate", bpi$TEAM)
+bpi$TEAM <- gsub("Saint John's", "St. John's", bpi$TEAM)
+bpi$TEAM <- gsub("Gardner-Webb", "Gardner Webb", bpi$TEAM)
+bpi$TEAM <- gsub("Texas-Arlington", "UT Arlington", bpi$TEAM)
+bpi$TEAM <- gsub("Loyola-Maryland", "Loyola MD", bpi$TEAM)
+bpi$TEAM <- gsub("Loyola-Marymount", "Loyola Marymount", bpi$TEAM)
+bpi$TEAM <- gsub("College Of Charleston", "College of Charleston", bpi$TEAM)
+bpi$TEAM <- gsub("ULM", "Louisiana Monroe", bpi$TEAM)
+bpi$TEAM <- gsub("Texas A&M-Corpus Christi", "Texas A&M Corpus Chris", bpi$TEAM)
+bpi$TEAM <- gsub("Presbyterian College", "Presbyterian", bpi$TEAM)
+bpi$TEAM <- gsub("Tennessee-Martin", "Tennessee Martin", bpi$TEAM)
+bpi$TEAM <- gsub("Seattle University", "Seattle", bpi$TEAM)
+bpi$TEAM <- gsub("Nebraska-Omaha", "Nebraska Omaha", bpi$TEAM)
+bpi$TEAM <- gsub("Texas-Pan American", "UT Rio Grande Valley", bpi$TEAM)
+bpi$TEAM <- gsub("Louisiana-Lafayette", "Louisiana Lafayette", bpi$TEAM)
+bpi$TEAM <- gsub("Bethune-Cookman", "Bethune Cookman", bpi$TEAM)
+bpi$TEAM <- gsub("Massachusetts-Lowell", "UMass Lowell", bpi$TEAM)
+bpi$TEAM <- gsub("UMass-Lowell", "UMass Lowell", bpi$TEAM)
+bpi$TEAM <- gsub("Purdue Fort Wayne", "Fort Wayne", bpi$TEAM)
+bpi$TEAM <- gsub("California Baptist", "Cal Baptist", bpi$TEAM)
+
+write.csv(bpi, "../Data/SOSData.csv", row.names = FALSE)
+```

@@ -1,0 +1,606 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Packages
+```{r warning = FALSE, message = FALSE}
+library(readr)
+library(MASS)
+library(bestglm)
+library(leaps)
+library(corrplot)
+library(tidyverse)
+library(kernlab)
+library(e1071)
+library(caTools)
+library(class)
+library(neuralnet)
+library(reticulate)
+```
+
+# Imports
+```{r}
+gwd <- read.csv("../Data/gamesTo2021UPDATED.csv")
+allTournYr <- read.csv("../Data/cbbAll.csv")
+cbb20 <- read.csv("../Data/cbb20.csv")
+bpi <- read.csv("../Data/SOSData.csv")
+
+allTournYr <- allTournYr %>% left_join(bpi, by = c("TEAM", "YEAR"))
+cbb20 <- cbb20 %>% left_join(filter(bpi, YEAR == 2020), by = "TEAM") %>% select(-c("YEAR"))
+
+# Lots of Imputing -- Some Teams Did Not Have BPI Records for 1-2 Years
+allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & allTournYr$SEED == 13, 0.5022333, allTournYr$SOS))
+allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & is.na(allTournYr$SEED), 0.35, allTournYr$SOS))
+```
+
+# Analysis Section
+
+## Postseason Berth
+
+### SVM
+
+```{r}
+berth <- allTournYr %>% select(c(3:21, 24:26)) %>% mutate(WR = W / G) %>% select(-c(1:2,21))
+berth <- cbind(berth[,1:17], berth[,19:20], berth[,18])
+colnames(berth)[20] <- c("POSTSEASON")
+```
+
+```{r}
+set.seed(320)
+split = sample.split(berth$POSTSEASON, SplitRatio = 0.80)
+
+train = subset(berth, split == TRUE)
+test = subset(berth, split == FALSE)
+
+train_noscale <- train
+test_noscale <- test
+
+train[,1:17] <- scale(train[,1:17])
+test[,1:17] <- scale(test[,1:17])
+```
+
+```{r}
+costs=10^(-2:2)
+gammas=c(.25,.5,1,2)
+ret <- data.frame()
+
+for (cost in costs) {
+  for (gamma in gammas) {
+    temp_classifier <- svm(formula = POSTSEASON ~ ., data = train, type = 'C-classification', kernel = 'linear', probability = TRUE, cost = cost, gamma = gamma)
+    y_pred <- predict(temp_classifier, newdata = test[1:19], probability = TRUE)
+    table <- table(test[,20], y_pred)
+    acc <- ((table[1,1] + table[2,2]) / (table[1,1] + table[2,2] + table[1,2] + table[2,1]))
+    sens <- ((table[1,1]) / (table[1,1] + table[2,1]))
+    prec <- ((table[1,1]) / (table[1,1] + table[1,2]))
+    
+    ret <- rbind(ret, (c(cost, gamma, acc, sens, prec)))
+    
+  }
+}
+
+colnames(ret) <- c("Cost", "Gamma", "Acc", "Sens", "Prec")
+```
+
+
+```{r}
+classifier <- svm(formula = POSTSEASON ~ ., data = train, type = 'C-classification', kernel = 'linear', probability = TRUE, cost = 1, gamma = 1)
+
+y_pred <- predict(classifier, newdata = test[1:19], probability = TRUE)
+table(test[,20], y_pred)
+```
+
+```{r}
+test_probs <- attr(y_pred, "probabilities")
+test_probs_df <- data.frame(index = rownames(test_probs), prob1 = test_probs[,2], 
+          makesPost = ifelse(rownames(test_probs) %in% 
+          rownames(test)[which(test$POSTSEASON == 1)], FALSE, TRUE)
+          )
+
+test_actuals_df <- data.frame(index = rownames(test), makesPost = test$POSTSEASON)
+
+errors <- test_actuals_df[which(y_pred != test$POSTSEASON),]$index
+
+test_probs_df <- test_probs_df %>% mutate(isError = index %in% errors)
+
+ggplot(data = test_actuals_df, mapping = aes(x = index, y = makesPost)) + 
+  geom_point() + 
+  geom_point(data = subset(test_probs_df, makesPost == TRUE & isError == FALSE), 
+             mapping = aes(x = index, y = prob1), color = "blue") + 
+  geom_point(data = subset(test_probs_df, makesPost == TRUE & isError == TRUE), 
+             mapping = aes(x = index, y = prob1), color = "blue", size = 3) + 
+  geom_point(data = subset(test_probs_df, makesPost == FALSE & isError == FALSE), 
+             mapping = aes(x = index, y = prob1), color = "red") + 
+  geom_point(data = subset(test_probs_df, makesPost == FALSE & isError == TRUE), 
+             mapping = aes(x = index, y = prob1), color = "red", size = 3) +
+  scale_y_continuous(breaks = seq(0,1,1), labels = c("False", "True"), 
+                     sec.axis = sec_axis(trans~.*1, name = "Probabiltiy of Berth")) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(title = "Predictions for Postseason Births within Testing Data", 
+       subtitle = "Original Data of 2013-2021 Games, exc. 2020; See Caption for Color Guide", y = "Received Berth",
+       caption = "Blue: Team reached postseason. \n Red: Team did not reach postseason. \n Black: The actual results. \n LARGER SIZES indicate False Positive (Red), False Negative (Blue).", y = "Received Berth") 
+```
+
+```{r}
+test_noscale <- cbind(test_noscale, y_pred)
+
+ggplot(data = test_noscale, mapping = aes(x = ADJOE, y = ADJDE, color = y_pred)) + geom_point()
+ggplot(data = test_noscale, mapping = aes(x = TOR, y = WR, color = y_pred)) + geom_point()
+```
+
+## KNN
+
+```{r warning = FALSE}
+mean_error <- function(actual, predicted) {
+  mean(actual != predicted)
+}
+
+ret <- data.frame()
+
+for (k in 1:60) {
+  temp_knn <- knn(train, test, cl = factor(train$POSTSEASON), k = k)
+  ret <- rbind(ret, c(k, mean_error(test$POSTSEASON, temp_knn)))
+}
+
+colnames(ret) <- c("k", "CCE")
+
+plot(ret, type = "b", col = "skyblue", cex = 1, pch = 20, 
+     xlab = "k", ylab = "Mean of Classification Error",
+     main = "(Test) Error Rate vs Neighbors")
+abline(h = mean(ret$CCE), col = "orange", lty = 2)
+abline(h = min(ret$CCE), col = "grey", lty = 2)
+
+knn_pb <- knn(train[,1:19], test[,1:19], cl = factor(train$POSTSEASON), k = ret[which(ret$CCE == min(ret$CCE)),1])
+```
+
+```{r}
+ggplot(data = test_noscale, mapping = aes(x = ADJOE, y = ADJDE, color = knn_pb)) + geom_point()
+ggplot(data = test_noscale, mapping = aes(x = TOR, y = WR, color = knn_pb)) + geom_point()
+```
+
+## ANN
+
+```{r}
+train_x <- train %>% select(-c("POSTSEASON"))
+train_y <- train %>% select("POSTSEASON")
+
+test_x <- test %>% select(-c("POSTSEASON"))
+test_y <- test %>% select("POSTSEASON")
+
+write.csv(train_x, "../Data/train_x_post.csv", row.names = FALSE)
+write.csv(train_y, "../Data/train_y_post.csv", row.names = FALSE)
+write.csv(test_x, "../Data/test_x_post.csv", row.names = FALSE)
+write.csv(test_y, "../Data/test_y_post.csv", row.names = FALSE)
+```
+
+```{r echo = FALSE, eval = F}
+invisible(source_python("../Paper/postseasonNet.py"))
+invisible(source_python("../Paper/seedNet.py"))
+```
+
+```{r}
+post_model = read.delim("./post_model.txt")
+```
+
+# Seed Prediction
+
+## SVM
+
+```{r}
+berth <- allTournYr %>% filter(RESULT != "No Appearance") %>% select(c(3:21, 23,25:26)) %>% mutate(WR = W / G) %>% select(-c(1:2))
+berth$SEED <- as.factor(berth$SEED)
+```
+
+```{r}
+train = berth %>% filter(YEAR <= 2019) %>% select(-c("YEAR"))
+test = berth %>% filter(YEAR == 2021) %>% select(-c("YEAR"))
+```
+
+```{r}
+classifier <- svm(formula = SEED ~ ., data = train, type = 'C-classification', kernel = 'radial', probability = TRUE)
+
+y_pred <- predict(classifier, newdata = test, probability = TRUE)
+test_probs <- attr(y_pred, "probabilities")
+
+pred <- c()
+
+for (i in 1:nrow(test_probs)) {
+  df <- test_probs[i,]
+  pred[i] <- which(df == max(df))
+}
+
+results <- cbind(test[,18], pred)
+c = 0
+for (i in 1:nrow(results)) {
+  if (results[i,1] == results[i,2]) {
+    c = c + 1
+  }
+}
+
+```
+
+## KNN
+
+```{r}
+mean_error <- function(actual, predicted) {
+  mean(actual != predicted)
+}
+
+ret <- data.frame()
+
+for (k in 1:60) {
+  temp_knn <- knn(train, test, cl = factor(train$SEED), k = k)
+  ret <- rbind(ret, c(k, mean_error(test$SEED, temp_knn)))
+}
+
+colnames(ret) <- c("k", "CCE")
+
+plot(ret, type = "b", col = "skyblue", cex = 1, pch = 20, 
+     xlab = "k", ylab = "Mean of Classification Error",
+     main = "(Test) Error Rate vs Neighbors")
+abline(h = mean(ret$CCE), col = "orange", lty = 2)
+abline(h = min(ret$CCE), col = "grey", lty = 2)
+
+knn_seed <- knn(train[,c(1:17,19:20)], test[,c(1:17,19:20)], cl = factor(train$SEED), k = ret[which(ret$CCE == min(ret$CCE)),1], prob = TRUE)
+
+```
+
+## ANN
+
+```{r}
+train_x <- train %>% select(-c("SEED"))
+train_y <- train %>% select("SEED")
+
+test_x <- test %>% select(-c("SEED"))
+test_y <- test %>% select("SEED")
+
+getwd()
+
+write.csv(train_x, "../Data/train_x_seeds.csv", row.names = FALSE)
+write.csv(train_y, "../Data/train_y_seeds.csv", row.names = FALSE)
+write.csv(test_x, "../Data/test_x_seeds.csv", row.names = FALSE)
+write.csv(test_y, "../Data/test_y_seeds.csv", row.names = FALSE)
+```
+
+# Field Generation
+
+## With ANN
+
+```{r}
+cbb20 <- read.csv("../data/cbb20Trimmed.csv")
+```
+
+```{r}
+pred_field <- read.csv("../Data/field2020.csv")
+pred_teams <- pred_field %>% select(-c("X", "X0")) %>% rename(prob1 = X1)
+
+pred_teams <- cbind(pred_teams, rank(desc(pred_teams$prob1))) 
+colnames(pred_teams)[3] <- "Rank"
+
+pred_teams <- pred_teams %>% filter(Rank <= 68)
+
+fieldData <- cbb20 %>% filter(TEAM %in% pred_teams$TEAM) 
+write.csv(fieldData, "../Data/cbb20FINAL.csv", row.names = FALSE)
+```
+
+```{r}
+seeds_NN <- read.csv("../Data/cbb20SEEDS.csv")
+seeds_NN$X0 <- seeds_NN$X0 + 1
+seeds_NN <- seeds_NN[,2:3]
+
+seeds_NN <- cbind(seeds_NN, rep(1, nrow(seeds_NN)))
+colnames(seeds_NN)[2:3] <- c("Seed", "Berth")
+```
+
+## With KNN
+
+```{r}
+berth <- allTournYr %>% select(c(3:21, 24:26)) %>% mutate(WR = W / G) %>% select(-c(1:2,21))
+berth <- cbind(berth[,1:17], berth[,19:20], berth[,18])
+colnames(berth)[20] <- c("POSTSEASON")
+```
+
+```{r}
+set.seed(320)
+split = sample.split(berth$POSTSEASON, SplitRatio = 0.80)
+
+train = subset(berth, split == TRUE)
+test = subset(berth, split == FALSE)
+
+train_noscale <- train
+test_noscale <- test
+
+train[,1:17] <- scale(train[,1:17])
+test[,1:17] <- scale(test[,1:17])
+```
+
+```{r}
+new_test <- cbb20 %>% mutate(SOS = ifelse(is.na(SOS), mean(na.omit(SOS)), SOS))
+
+knn_pb_2020 <- knn(train[,1:19], scale(new_test[,2:20]), cl = factor(train$POSTSEASON), k = 36, prob = TRUE)
+
+if (table(knn_pb_2020)[2] < 68) {
+  needed <- 68 - table(knn_pb_2020)[2]
+  knn_not_sure = knn_pb_2020[which(knn_pb_2020 == 0)]
+  knn_not_sure_prob = attr(knn_pb_2020, "prob")[which(knn_pb_2020 == 0)]
+  indices <- c(which(knn_pb_2020 == 1),
+                   which(knn_pb_2020 == 0)[which(order(knn_not_sure_prob) <= needed)])
+  
+  knn_field_2020 <- new_test[indices,]
+} else {
+  knn_field_2020 <- new_test[which(knn_pb_2020 == 1)]
+}
+
+train <- allTournYr %>% select(c(1:21, 23:26)) %>% mutate(WR = W / G) %>% select(-c(2:4,23:24)) %>% filter(!is.na(SEED))
+
+knn_seed_2020 <- knn(train[,c(2:18,20:21)], knn_field_2020[,2:20], cl = factor(train$SEED), k = 6)
+
+knn_field_2020 <- cbind(knn_field_2020, knn_seed_2020)
+colnames(knn_field_2020)[21] <- "Seed"
+```
+
+## With SVM
+
+```{r}
+berth <- allTournYr %>% select(c(3:21, 24:26)) %>% mutate(WR = W / G) %>% select(-c(1:2,21))
+berth <- cbind(berth[,1:17], berth[,19:20], berth[,18])
+colnames(berth)[20] <- c("POSTSEASON")
+```
+
+```{r}
+set.seed(320)
+split = sample.split(berth$POSTSEASON, SplitRatio = 0.80)
+
+train = subset(berth, split == TRUE)
+test = subset(berth, split == FALSE)
+
+train_noscale <- train
+test_noscale <- test
+
+train[,1:17] <- scale(train[,1:17])
+test[,1:17] <- scale(test[,1:17])
+```
+
+```{r}
+classifier <- svm(formula = POSTSEASON ~ ., data = train, type = 'C-classification', kernel = 'linear', probability = TRUE, cost = 1, gamma = 1)
+
+y_pred <- predict(classifier, newdata = new_test[,2:20], probability = TRUE)
+attr(y_pred, "probabilities")
+```
+
+```{r}
+svm_not_sure = which(y_pred == 0)
+indices = c(
+  svm_not_sure[which(order(attr(y_pred, "probabilities")[svm_not_sure]) <= 22)],
+  which(y_pred == 1)
+  )
+
+svm_field_2020 <- new_test[indices,]
+```
+
+```{r}
+train <- allTournYr %>% select(c(1:21, 23:26)) %>% mutate(WR = W / G) %>% select(-c(2:4,23:24)) %>% filter(!is.na(SEED))
+
+classifier <- svm(formula = SEED ~ ., data = train[,2:21], type = 'C-classification', kernel = 'linear', probability = TRUE, cost = 1, gamma = 1)
+
+y_pred <- predict(classifier, newdata = svm_field_2020[,2:20])
+svm_seed_2020 <- cbind(svm_field_2020, y_pred)
+colnames(svm_seed_2020)[21] <- "Seed"
+```
+
+```{r}
+total_field <- knn_field_2020 %>% select(c("TEAM", "Seed")) %>% full_join(svm_seed_2020 %>% select(c("TEAM", "Seed")), by = c("TEAM")) %>% full_join(seeds_NN %>% select(c("TEAM", "Seed")), by = c("TEAM"))
+
+automatic <- total_field[complete.cases(total_field),] %>% mutate(Seed.x = as.numeric(Seed.x), Seed.y = as.numeric(Seed.y), Seed = as.numeric(Seed)) %>% rename(KNN = Seed.x, SVM = Seed.y, ANN = Seed) 
+
+means <- c()
+for (i in 1:nrow(automatic)) {
+  means[i] = (automatic[i,2] + automatic[i,3] + automatic[i,4]) / 3
+}
+
+automatic <- automatic %>% cbind(means) %>% arrange(means) %>% cbind(c(1:nrow(automatic))) 
+colnames(automatic)[ncol(automatic)] <- "Rank"
+automatic <- cbind(automatic, c(rep(1:10, each = 4), 11, 11, 11))
+colnames(automatic)[ncol(automatic)] <- "Seed"
+
+at_large <- total_field[-which(automatic$TEAM %in% total_field$TEAM),] 
+at_large <- at_large[-which(at_large$TEAM %in% automatic$TEAM),]
+at_large <- at_large %>% mutate(Seed.x = as.numeric(Seed.x), Seed.y = as.numeric(Seed.y), Seed = as.numeric(Seed)) %>% rename(KNN = Seed.x, SVM = Seed.y, ANN = Seed)
+at_large <- at_large %>% mutate(KNN = ifelse(is.na(KNN), 16, KNN), 
+                   SVM = ifelse(is.na(SVM), 16, SVM),
+                   ANN = ifelse(is.na(ANN), 16, ANN))
+means <- c()
+for (i in 1:nrow(at_large)) {
+  means[i] = (at_large[i,2] + at_large[i,3] + at_large[i,4]) / 3
+}
+
+at_large <- at_large %>% cbind(means) %>% arrange(means) 
+at_large <- cbind(at_large, c(1:nrow(at_large))) 
+colnames(at_large)[ncol(at_large)] <- "Rank"
+at_large <- at_large[1:(68-nrow(automatic)),]
+at_large <- cbind(at_large, c(11, 11, 11, rep(12:15, each = 4), rep(16, each = 6)))
+colnames(at_large)[ncol(at_large)] <- "Seed"
+```
+
+```{r}
+predicted_field_final <- rbind(automatic, at_large)
+write.csv(predicted_field_final, "../Data/tournamentFINAL.csv", row.names = FALSE)
+```
+
+```{r}
+tournament <- read.csv("../Data/tournamentFINAL.csv")
+cbb20 <- read.csv("../Data/cbb20.csv") %>% select(-c("RK"))
+gwd <- read.csv("../Data/gamesTo2021UPDATED.csv") 
+```
+
+```{r}
+getDifferentials <- function(data) {
+  matchup <- data
+  ret <- data.frame()
+  
+  vec <- c()
+  names <- c()
+  for (i in 5:21) {
+    vec[i - 3] <- round(matchup[1,i] - matchup[2,i], 3)
+    names[i - 3] <- paste(colnames(matchup)[i], "DIFF", sep = "_")
+  }
+  names[1] <- "ID"
+  vec[1] <- paste(matchup$TEAM[1], matchup$TEAM[2], sep = "-")
+  ret <- rbind(ret, vec)
+  colnames(ret) <- names
+  return(ret)
+}
+```
+
+
+```{r}
+first_four_11 <- tournament %>% filter(Seed == 11) %>% sample_n(size = 2)
+first_four_16 <- tournament %>% filter(Seed == 16) %>% sample_n(size = 2)
+
+first_four_1 <- rbind(first_four_11[1,], first_four_16[1,]) %>% select(-c("KNN":"Rank"))
+first_four_2 <- rbind(first_four_11[2,], first_four_16[2,]) %>% select(-c("KNN":"Rank"))
+```
+
+```{r}
+ff_matchup1 <- rbind(cbb20 %>% filter(TEAM == first_four_1$TEAM[1]),
+                     cbb20 %>% filter(TEAM == first_four_1$TEAM[2])) 
+ff_matchup2 <- rbind(cbb20 %>% filter(TEAM == first_four_2$TEAM[1]),
+                     cbb20 %>% filter(TEAM == first_four_2$TEAM[2]))
+
+ff_matchup1_diff <- getDifferentials(ff_matchup1)
+ff_matchup2_diff <- getDifferentials(ff_matchup2)
+
+round_of_64 <- tournament[-c(which(tournament$TEAM %in% first_four_11$TEAM | 
+                      tournament$TEAM %in% first_four_16$TEAM)),]
+
+makeRegions <- function(data, i) {
+  ret <- data.frame()
+  for (j in 1:16) {
+    ret <- rbind(ret, 
+                 cbb20 %>% filter(TEAM == (data %>% filter(Seed == j))$TEAM[i]))
+  }
+  return(ret)
+}
+
+east <- makeRegions(round_of_64, 1)
+south <- makeRegions(round_of_64, 2)
+midwest <- makeRegions(round_of_64, 3)
+west <- makeRegions(round_of_64, 4)
+```
+
+```{r}
+makeMatchups <- function(region) {
+  ret <- data.frame()
+  for (i in 0:((nrow(region)/2) - 1)) {
+    ret <- rbind(ret, getDifferentials(rbind(region[i + 1,], region[nrow(region)-i,])))
+  }
+  
+  ret[,2:ncol(ret)] <- ret[,2:ncol(ret)] %>% mutate_if(is.character, as.numeric)
+  
+  return(ret)
+}
+
+east_R64 <- makeMatchups(east)
+south_R64 <- makeMatchups(south)
+midwest_R64 <- makeMatchups(midwest)
+west_R64 <- makeMatchups(west)
+```
+
+```{r}
+diffs <- gwd[,c(8,11:27)]
+
+scoreDiffMod <- glm(formula = ScoreDiff ~ ADJOE_DIFF + ADJDE_DIFF + TORD_DIFF + 
+    WAB_DIFF, data = diffs)
+
+simulate <- function(games, name) {
+  diffs <- predict.lm(scoreDiffMod, games)
+  splits <- strsplit(games$ID, split = "-")
+  teams <- c()
+  
+  for (i in 1:length(splits)) {
+    if (diffs[i] > 0) {
+      teams[i] <- splits[[i]][1]
+    }
+    else {
+      teams[i] <- splits[[i]][2]
+    }
+  }
+  
+  ret <- data.frame(cbind(games$ID, round(diffs, 1), teams, rep(name, each = i)))
+  colnames(ret) <- c("ID", "DIFF", "TEAM")
+  return(ret)
+}
+
+updateRegions <- function(data) {
+  ret <- data.frame()
+  for (i in 1:nrow(data)) {
+    ret <- rbind(ret, cbb20 %>% filter(TEAM == data$TEAM[i]))
+  }
+  return(ret)
+}
+ff_matchup1_diff[,2:ncol(ff_matchup1_diff)] <- ff_matchup1_diff[,2:ncol(ff_matchup1_diff)] %>% mutate_if(is.character, as.numeric)
+ff_matchup2_diff[,2:ncol(ff_matchup2_diff)] <- ff_matchup2_diff[,2:ncol(ff_matchup2_diff)] %>% mutate_if(is.character, as.numeric)
+
+first_four1 <- simulate(ff_matchup1_diff, "First Four")
+first_four2 <- simulate(ff_matchup2_diff, "First Four")
+
+east_Round1 <- simulate(east_R64, "East - Round of 64")
+east_Round2 <- simulate(makeMatchups(updateRegions(east_Round1)), "East - Round of 32")
+east_Round3 <- simulate(makeMatchups(updateRegions(east_Round2)), "East - Sweet 16")
+east_final <- simulate(makeMatchups(updateRegions(east_Round3)), "East - Elite 8")
+
+west_Round1 <- simulate(west_R64, "West - Round of 64")
+west_Round2 <- simulate(makeMatchups(updateRegions(west_Round1)), "West - Round of 32")
+west_Round3 <- simulate(makeMatchups(updateRegions(west_Round2)), "West - Sweet 16")
+west_final <- simulate(makeMatchups(updateRegions(west_Round3)), "West - Elite 8")
+
+midwest_Round1 <- simulate(midwest_R64, "Midwest - Round of 64")
+midwest_Round2 <- simulate(makeMatchups(updateRegions(midwest_Round1)), "Midwest - Round of 32")
+midwest_Round3 <- simulate(makeMatchups(updateRegions(midwest_Round2)), "Midwest - Sweet 16")
+midwest_final <- simulate(makeMatchups(updateRegions(midwest_Round3)), "Midwest - Elite 8")
+
+south_Round1 <- simulate(south_R64, "South - Round of 64")
+south_Round2 <- simulate(makeMatchups(updateRegions(south_Round1)), "South - Round of 32")
+south_Round3 <- simulate(makeMatchups(updateRegions(south_Round2)), "South - Sweet 16")
+south_final <- simulate(makeMatchups(updateRegions(south_Round3)), "South - Elite 8")
+
+final_four1 <- simulate(makeMatchups(updateRegions(rbind(east_final, west_final))),
+                        "Final Four (East vs. West)")
+final_four2 <- simulate(makeMatchups(updateRegions(rbind(south_final, midwest_final))),
+                        "Final Four (South vs. Midwest)")
+
+championship <- simulate(makeMatchups(updateRegions(rbind(final_four1, final_four2))),
+                         "Championship Game")
+```
+
+```{r}
+tourney <- rbind(
+  first_four1,
+  first_four2,
+  east_Round1,
+  east_Round2,
+  east_Round3,
+  east_final,
+  west_Round1,
+  west_Round2,
+  west_Round3,
+  west_final,
+  midwest_Round1,
+  midwest_Round2,
+  midwest_Round3,
+  midwest_final,
+  south_Round1,
+  south_Round2,
+  south_Round3,
+  south_final,
+  final_four1,
+  final_four2,
+  championship
+)
+
+write.csv(tourney, "../Data/tourneySimulated.csv", row.names = FALSE)
+```
