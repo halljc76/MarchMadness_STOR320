@@ -6,6 +6,9 @@ editor_options:
 ---
 
 # Packages
+
+All of the following packages **should** be used. 
+
 ```{r warning = FALSE, message = FALSE}
 library(readr)
 library(MASS)
@@ -13,15 +16,20 @@ library(bestglm)
 library(leaps)
 library(corrplot)
 library(tidyverse)
-library(kernlab)
 library(e1071)
 library(caTools)
 library(class)
 library(neuralnet)
-library(reticulate)
 ```
 
 # Imports
+
+**The origins of these datasets are as follows:**
+
+* - gwd: The 'Cleaning.Rmd' file in the '../Cleaning' directory.
+* - cbbAll, cbb20: Kaggle repo that was the original source of data.
+* - bpi: 'bpiScraper.Rmd'
+
 ```{r}
 gwd <- read.csv("../Data/gamesTo2021UPDATED.csv")
 allTournYr <- read.csv("../Data/cbbAll.csv")
@@ -32,6 +40,8 @@ allTournYr <- allTournYr %>% left_join(bpi, by = c("TEAM", "YEAR"))
 cbb20 <- cbb20 %>% left_join(filter(bpi, YEAR == 2020), by = "TEAM") %>% select(-c("YEAR"))
 
 # Lots of Imputing -- Some Teams Did Not Have BPI Records for 1-2 Years
+# The imputed values are the mean SOS for the same-seeded teams over the years.
+# For teams that did NOT have seeds, I imputed a value well below any other SOS in the dataset.
 allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & allTournYr$SEED == 13, 0.5022333, allTournYr$SOS))
 allTournYr <- allTournYr %>% mutate(SOS = ifelse(is.na(allTournYr$SOS) & is.na(allTournYr$SEED), 0.35, allTournYr$SOS))
 ```
@@ -82,6 +92,8 @@ for (cost in costs) {
 }
 
 colnames(ret) <- c("Cost", "Gamma", "Acc", "Sens", "Prec")
+# dir.create("../Data/Results")
+write.csv(ret, "../Data/Results/SVM_PB_HP.csv", row.names = FALSE)
 ```
 
 
@@ -177,13 +189,12 @@ write.csv(test_x, "../Data/test_x_post.csv", row.names = FALSE)
 write.csv(test_y, "../Data/test_y_post.csv", row.names = FALSE)
 ```
 
-```{r echo = FALSE, eval = F}
-invisible(source_python("../Paper/postseasonNet.py"))
-invisible(source_python("../Paper/seedNet.py"))
-```
+**Now, run the "postseasonNet.py" file found in this directory.**
 
 ```{r}
-post_model = read.delim("./post_model.txt")
+post_model = str_split(read_file("./post_model.txt"), "\r\n")
+train_acc_post = as.numeric(post_model[[1]][1])
+test_acc_post = as.numeric(post_model[[1]][2])
 ```
 
 # Seed Prediction
@@ -258,13 +269,19 @@ train_y <- train %>% select("SEED")
 test_x <- test %>% select(-c("SEED"))
 test_y <- test %>% select("SEED")
 
-getwd()
-
 write.csv(train_x, "../Data/train_x_seeds.csv", row.names = FALSE)
 write.csv(train_y, "../Data/train_y_seeds.csv", row.names = FALSE)
 write.csv(test_x, "../Data/test_x_seeds.csv", row.names = FALSE)
 write.csv(test_y, "../Data/test_y_seeds.csv", row.names = FALSE)
 ```
+
+```{r}
+seed_model = str_split(read_file("./post_model.txt"), "\r\n")
+train_acc_seed = as.numeric(seed_model[[1]][1])
+test_acc_seed = as.numeric(seed_model[[1]][2])
+```
+
+**NOW, run the "seedNet.py" file found in the same directory as this script.**
 
 # Field Generation
 
@@ -369,7 +386,6 @@ test[,1:17] <- scale(test[,1:17])
 classifier <- svm(formula = POSTSEASON ~ ., data = train, type = 'C-classification', kernel = 'linear', probability = TRUE, cost = 1, gamma = 1)
 
 y_pred <- predict(classifier, newdata = new_test[,2:20], probability = TRUE)
-attr(y_pred, "probabilities")
 ```
 
 ```{r}

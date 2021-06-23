@@ -1,13 +1,171 @@
 ---
-output:
-  pdf_document: default
-  html_document: default
-  word_document: default
+title: "What Makes a Championship Winning Team...Statistically?"
+author: "GROUP 10 -- Corey T., Carter H., Luis G., Paul C."
+date: "24 June 2021"
+output: pdf_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggpubr)
+library(ISLR)
+library(glmnet)
+library(dplyr)
+library(tidyr)
+library(jtools)
+library(interactions)
+library(gt)
+library(kableExtra)
+library(readr)
+```
+
+\section{Introduction}
+
+Every year, upwards of 15 million Americans come together to support their favorite college basketball team when the NCAA D1 MBB Tournament begins, affectionally dubbed "March Madness". What makes this tournament so special is that it is full of upsets and late game drama that provide galvanizing and inspiring games throughout the tournament. Furthermore, many Americans partake in predicting the outcomes of tournament games, often times with money on the line with their fellow peers. For example, according to Bloomberg News and Business (https://www.bloomberg.com/graphics/2015-march-madness-gambling/), 9 billion dollars’ worth of cash flow was put into betting in the 2015 March Madness Tournament. Having piqued our interest as a group, we wanted to conduct research on 2 questions regarding college basketball teams and their success throughout the season and tournament: What variables are important in determining the win rate/proportion for a team in a given season? Additionally, how can the 2020 Tournament field be simulated with the data present?
+
+To try to answer these questions, we looked at a College Basketball Dataset that provides information about college basketball teams within power 5 conferences, such as their record, field goal percentage, offensive and defensive efficiency, and much more. With respect to the first question, we wanted to dive into many of the different factors of basketball that lead to wins and losses. This question is very important, considering that the sport-betting industry is gaining traction and is being made legal in more states. Studying teams' tendencies can lead to my making better bets as well as creating a successful prediction of the winner of tournament games. 
+
+With respect to the second question, a significant part of the March Madness Tournament is deciding what teams get into the tournament, as well as what seed each team gets. Depending on how well a team plays during the regular season determines the seed you get in the post season. Using some of the analysis from answering the first question, we can try to simulate what the seeds will be for a mock season. The 2020 college basketball season is the season we wanted to look into because there was a full regular season, but due to COVID-19 there was no tournament. Using the data of the regular season we can attempt to predict the seeding arrangement for what would have been the 2020 tournament.
+
+\section{Data: Determining Win Rate}
+
+In our project, we where overwhelmed by a vast data set with an extensive amount of continuous variables related to performance and results for each team in a respective year, with some of them being of our interest due to most likely being able to predict and create a model for something of high interest such as win rate, as to find what made a "winning team". Win rate was not included in the original data set, so we had to mutate our data frame from the already included G and W fields, by dividing W(wins) by G(games). Our data was first divided into multiple files each corresponding to a certain year, but we decided to combine them together with some information from outside sources, such as 2021 results, which were not included in the original cbb21 file as to have all of the information from 2013-2021 in one file. In later parts of the project, we decided to focus in ADJDE and ADJOE as we thought they would be useful at predicting win rate. We decided to create a density plot of win rate to check out the distributions and have an idea of what we could expect to find in the data. There were also multiple categorical variables in our data set such as TEAM,CONF,RESULT,SEED,POSTSEASON and YEAR, which we later excluded for one of the sections of our project so as to find those continuous variables that are significant and would result in a good model for calculating win rate. 
+
+```{r echo = FALSE}
+cbb <- read.csv("../Data/cbbAll.csv")
+cbbWIN_RATE <- cbb %>%
+  mutate(win_rate = W/G) %>%
+  select(-G,-W)
+
+density <- ggplot(cbbWIN_RATE,aes(x=win_rate)) +
+  geom_density()
+density
+```
+
+\begin{center}
+Figure 1: Density Plot of Win Rates of D1 MBB Teams, 2013-2021 (excluding 2020)
+\end{center}
+
+Some variables of interest:
+
+```{r,echo=FALSE}
+dataTribble <- tribble(
+                    ~Variable, ~Definition,
+                    #-------|-------------
+                    "TEAM","Name of the team",
+                    "CONF","Conference in which the team participates in",
+                    "win_rate","Win rate, derivated from G and W",
+                    "G","Amount of games played",
+                    "W","Amount of wins",
+                    "ADJOE","Adjusted Offensive Efficiency (Estimate of points scored 100 possesions)",
+                    "ADJDE","Adjusted Defensive Efficiency (Estimate of points allowed per 100 possesions)",
+                    "ORB","Offensive Rebound Rate",
+                    "TOR","Turnover Percentage Allowed")
+dataTribble
+```
+
+\begin{center}
+Figure 2: Data Dictionary for Some Important Variables (a comprehensive dictionary can be found at the Kaggle link in the 'Data: Tournament Simulation' section)
+\end{center}
+
+
+Some of what is included in the modified data frame:
+
+```{r,echo = FALSE}
+str(cbbWIN_RATE)
+```
+
+\begin{center}
+Figure 3: Table of Variables and Their Respective Data Types from Dataset used in Figure 1
+\end{center}
+
+\section{Results: Determining Win Rate}
+
+In basketball, there are a lot of factors that go into a team becoming a winning team, but we thought that there would be certain stats that could measure how well a team performs in the court, with ADJOE(adjusted offensive efficiency) and ADJDE(adjusted defensive efficiency) being the first ones to cross our mind. The purpose of this section is to compare what could matter most in having a winning team, with ADJOE(adjusted offensive efficiency) and ADJDE(adjusted defensive efficiency) being analyzed with respect to win rate, a statistic calculated from the original data as wins divided by games, as some teams had much more games played than others so the data would be biased towards those teams as more games played meant a bigger chance for much more wins. First, we decided to plot the win rates of all teams with respect to both ADJOE and ADJDE, and we expected those with higher ADJDE to win the less whereas those with higher ADJOE to win the most. There could be teams with a high enough ADJOE that could diminish a high ADJDE and still result in big wins, so we wanted to check whether a balance of both would be favored. First, we wanted to make sure what was more favored in terms to win rate, so by plotting ADJOE and ADJDE vs win rate we were able to see that a low ADJDE and a high ADJOE often resulted in higher win rates, which is as expected. A good defensive team could be expected to have a low ADJDE, while a good offensive team would be expected to have a high ADJOE, so we wanted to research both ends.
+
+```{r, echo = FALSE}
+ggplot(data = cbbWIN_RATE, mapping = aes(x = ADJOE, y = win_rate)) + geom_point() + 
+  geom_smooth(method = 'lm') + labs(title = "Relationship between Adjusted Offensive Efficiency and Win Rate ", subtitle = "Data shown is of teams in tournaments from 2013-2021.", caption = "WR: Win Rate; ADJOE: Adjusted Offensive Efficiency: Points Scored per 100 Possessions")
+```
+
+\begin{center}
+Figure 4: Relationship between Adj. Offensive Efficiency, Win Rate
+\end{center}
+
+```{r echo = FALSE}
+ggplot(data = cbbWIN_RATE, mapping = aes(x = ADJDE, y = win_rate)) + geom_point() + 
+  geom_smooth(method = 'lm') + labs(title = "Relationship between Adjusted Defensive Efficiency and Win Rate ", subtitle = "Data shown is of teams in tournaments from 2013-2021.", caption = "WR: Win Rate; ADJDE: Adjusted Defensive Efficiency: Points Scored per 100 Possessions")
+```
+
+\begin{center}
+Figure 5: Relationship between Adj. Defensive Efficiency, Win Rate
+\end{center}
+
+But still, this is not enough to answer our question, as we still do not know if teams could have both a high ADJOE and high ADJDE or low ADJOE and low ADJDE and still win, or if other variables are still more impactful (that is, additional variables include important explanations in the variability of Win Rates). So, we decided to categorize win rate and ADJDE into three categories each, where each category was an interval of that variable. We divided our graphs by facets using three levels of ADJDE with three box plots each representing a win rate interval. We also used anova to make sure that the means between groups are different, which is what we expected since the start.
+
+
+```{r,echo = FALSE}
+cbbTTEST2 <- cbbWIN_RATE %>%
+  mutate(win_rate = ifelse(win_rate >= .75, ">75", ifelse(win_rate >= .50,"<75 and >50", "<50"))) %>%
+  mutate(ADJDE = ifelse(ADJDE >= 110, ">110", ifelse(ADJDE >= 95,"<110 and >95", "<95"))) %>%
+  select(win_rate,ADJDE,ADJOE)
+
+compare_means(ADJOE ~ win_rate, data = cbbTTEST2)
+p <- ggboxplot(cbbTTEST2, x = "win_rate", y = "ADJOE",
+          color = "win_rate", palette = "jco",
+          add = "jitter")
+p + stat_compare_means(method = "anova") + facet_wrap(ADJDE~.)
+```
+
+\begin{center}
+Figure 6: ANOVA Test for Difference of Means between Categorical Groups of Win Rates
+\end{center}
+
+By looking at the box plots, we can see more clearly that there is a relation between ADJOE and win rate, as the boxplots seem to be in a lower ADJOE range as the win rate decreases(which is marked by intervals). What is interesting is that we can eyesight several differences in the groups of ADJDE, with the most significant being that of no team having >75 winrate while also having >110 ADJDE. There also seems to be slight differences in quartiles and ADJOE highs in the box plots when comparing by ADJDE, with the most significant being the difference in highs in ADJOE in the <75 and >50 win rate interval when comparing all ADJDE groups. Another interesting thing is those teams that had a <95 ADJDE seemed to perform well, as most points in the group seem to be concentrated in the <75 and >50 and >75 win rate interval, with a really small fraction being in the <50 win rate interval. Even then, with a much less concentration in points in those ranges not >75, it still remains similar to >75 in magnitude of point presence but with higher ADJOE quartiles and highs, as there are points even in the 130 range. Through these box plots and the above mentioned graphs we were not only able to notice about the effect of ADJOE and ADJDE values and the respective win rates, but also of a suspecting interaction between ADJDE and ADJOE. Because of this, for the next step we decided to use lasso so that we could figure out the most significant variables which we may have missed due to tunneling in ADJOE and ADJDE. In addition, we could also check if there is an interaction between ADJOE and ADJDE, and graph it in case there was.
+
+
+```{r,echo = FALSE}
+#Raw data, discards all categorical values so that win rate can be compared freely in other stats
+NONUMERIC <- cbbWIN_RATE %>%
+  select(-TEAM,-CONF,-YEAR,-RESULT,-SEED,-POSTSEASON)
+
+# Splitting data into training and testing data
+x = model.matrix(win_rate~.^2, NONUMERIC)[,-1]
+y = NONUMERIC %>% select(win_rate) %>% unlist() %>% as.numeric()
+```
+
+```{r, echo = FALSE, results = 'hide'}
+cvfit <- cv.glmnet(x, y, type.measure = "mse", nfolds = 5)
+coef(cvfit, s = "lambda.min")
+```
+
+```{r, echo = FALSE}
+rownames(coef(cvfit, s = 'lambda.min'))[coef(cvfit, s = 'lambda.min')[,1]!= 0] ### returns nonzero coefs
+```
+
+\begin{center}
+Figure 7: List of Nonzero Coefficients from LASSO Model
+\end{center}
+
+```{r echo = FALSE}
+modelLASSO <- lm(win_rate ~ ADJOE + ADJDE + ADJOE:ADJDE,data = NONUMERIC)
+summary(modelLASSO) 
+
+interaction1 <- lm(win_rate ~ ADJOE*ADJDE, data = NONUMERIC)
+interact_plot(interaction1, pred = ADJOE, modx= ADJDE, interval = TRUE, int.width = 0.9)
+```
+
+\begin{center}
+Figure 8: Interaction Plot between Adj. Offensive, Defensive Efficiency and Win Rate 
+\end{center}
+
+After performing LASSO techniques, we were able to notice that that win rate was not something attributed to just a couple variables like ADJOE and ADJDE as we suspected, but a lot of variables also included in the data set and their interactions were also found to be significant. We were overwhelmed by the amount of significant variables outputted by lasso, as we did not consider them at the start of the project, but since they were a lot for the scope of this project we still decided to focus in ADJOE and ADJDE as their interaction mentioned before was found to be significant. In addition, we found that that just using ADJOE or ADJDE by themselves were significant enough, as shown by the table with the col names of those found to be significant. Next, we created an interaction plot of ADJOE with ADJDE and compared the three different lines categorized by different ADJDE standard deviations by win rate, and our results were what we expected as we found the line with an ADJDE of -1 SD to be the one with a higher intercept and higher win rate peak, and that with an ADJDE of +1 SD to be the one with the lowest intercept and lowest peak. However, as ADJOE increased, the win rate of all three lines also increased, and were fairly similar at where they peaked but still the difference of peaks could be seen clearly. In addition, ADJOE and ADJDE were found to be significant not only with their interaction, but also in interactions with other variables. Still, win rate was something much more complex that could not only be explained by just the interaction of ADJDE and ADJOE. A good model for calculating win rate could not only be created using ADJOE and ADJDE, but would also include a lot more variables, especially those such as WAB(wins above cutoff for making March Madness) or barthag(power rating).
+
+\newpage
 \section{Data: Tournament Simulation}
 
-Of particular interest in simulating the 2020 Tournament are datasets that encapsulate teams' summary statstics for any given season (2013-2021) and another that recounts the history of the Tournament by game. The first of these datasets contains a number of important summary statistics, many of which were discussed earlier in this section (e.g., ADJOE, ADJDE, ORB, TOR); each statistic is a representation of some aspect of the game of basketball, and higher/lower values of some statistics are often accompanied by higher win rates (see the Results section for additional commentary). Figure 1 provides a visualization of how this dataset is structured; note that, for 2020, the 'RESULT','SEED', and 'POSTSEASON' columns do not exist (these indicate how far a team went in the tournament, their seed that year, and whether or not they were invited, respectively).
+Of particular interest in simulating the 2020 Tournament are datasets that encapsulate teams' summary statstics for any given season (2013-2021) and another that recounts the history of the Tournament by game. The first of these datasets contains a number of important summary statistics, many of which were discussed earlier in this section (e.g., ADJOE, ADJDE, ORB, TOR); each statistic is a representation of some aspect of the game of basketball, and higher/lower values of some statistics are often accompanied by higher win rates (see the Results section for additional commentary). Figure 9 provides a visualization of how this dataset is structured; note that, for 2020, the 'RESULT','SEED', and 'POSTSEASON' columns do not exist (these indicate how far a team went in the tournament, their seed that year, and whether or not they were invited, respectively).
 
 \begin{table}[ht]
 \centering
@@ -24,9 +182,9 @@ Of particular interest in simulating the 2020 Tournament are datasets that encap
 \end{tabular}
 \end{table}
 
-\begin{center} Figure 1: Sample Summary Statistics from 2021 Season (some columns not shown due to cutoff) \end{center}
+\begin{center} Figure 9: Sample Summary Statistics from 2021 Season (some columns not shown due to cutoff) \end{center}
 
-Additionally, Figure 2 shows a small sample of games from the history of the NCAA Tournament (all games since 1985 were stored in this format).
+Additionally, Figure 10 shows a small sample of games from the history of the NCAA Tournament (all games since 1985 were stored in this format).
 
 | Year | Seed1 | Score1 | Team1        | Team2              | Score2 | Seed2 | ScoreDiff | Upset |
 | ---- | ----- | ------ | ------------ | ------------------ | ------ | ----- | --------- | ----- |
@@ -34,19 +192,19 @@ Additionally, Figure 2 shows a small sample of games from the history of the NCA
 | 2013 | 2     | 73     | Duke         | Albany             | 61     | 15    | 12        | 0     |
 | 2013 | 3     | 65     | Michigan St. | Valparaiso         | 54     | 14    | 11        | 0     |
 | 2013 | 4     | 64     | Saint Louis  | New Mexico St.     | 44     | 13    | 20        | 0     |
-\begin{center} Figure 2: Sample Data from History of NCAA Tournament Games \end{center}
+\begin{center} Figure 10: Sample Data from History of NCAA Tournament Games \end{center}
 
 \subsection{Sourcing Used Datasets}
 
 The following links or methods of obtaining the predominant resources used in the compilation of this report:
 
-*Kaggle Repository containing dataset(s) depicted in Figure 1: [Link](https://www.kaggle.com/andrewsundberg/college-basketball-dataset)
+* Kaggle Repository containing dataset(s) depicted in Figure 1: [**Link**](https://www.kaggle.com/andrewsundberg/college-basketball-dataset)
 
-* ESPN Link to 2021 Tournament Data (merged with Kaggle Repository to include results from this year): [Link](https://www.espn.com/mens-college-basketball/ncaa-tournament/)
+* ESPN Link to 2021 Tournament Data (merged with Kaggle Repository to include results from this year): [**Link**](https://www.espn.com/mens-college-basketball/ncaa-tournament/)
 
-* Link to Warren Nolan's website containing historical BPI Data (merged with Kaggle Repository and ESPN data): [Link](https://www.warrennolan.com/)
+* Link to Warren Nolan's website containing historical BPI Data (merged with Kaggle Repository and ESPN data): [**Link**](https://www.warrennolan.com/)
 
-* Data.World Link containing datasets depicted in Figure 2: [Link](https://data.world/michaelaroy/ncaa-tournament-results)
+* Data.World Link containing datasets depicted in Figure 2: [**Link**](https://data.world/michaelaroy/ncaa-tournament-results)
 
 \newpage
 
@@ -127,17 +285,19 @@ $$
 
 where $TP$ signifies "True Positive," $FN$ "False Negative," and the like.
 
-![](../Data/Images/svm_gg.png)
-\begin{center} Figure 3: Probabilities of Postseason Berths, 2013-2019 and 2021) \end{center}
+\begin{center} Figure 11: Confusion Matrix of SVM Postseason Berth Classifier \end{center}
 
-As evidenced by the above plot and confusion matrix, the SVM was confident in many of its classifications of teams' eligibility for postseason appearances, so much so that it failed to identify an adequate-sized field when validated on data from 2020. To combat this shortcoming, any results marking a team eligible for an appearance were coupled with the necessary number of *low-confidence* predictions of a team *not* making it into the postseason (e.g., as 46 teams were automatically selected, 22 were chosen among those initially not selected). 
+![](../Data/Images/svm_gg.png)
+\begin{center} Figure 12: Probabilities of Postseason Berths, 2013-2019 and 2021) \end{center}
+
+As evidenced by Figures 11 and 12, the SVM was confident in many of its classifications of teams' eligibility for postseason appearances, so much so that it failed to identify an adequate-sized field when validated on data from 2020. To combat this shortcoming, any results marking a team eligible for an appearance were coupled with the necessary number of *low-confidence* predictions of a team *not* making it into the postseason (e.g., as 46 teams were automatically selected, 22 were chosen among those initially not selected). 
 
 **KNN**
 
-In addition to an SVM, a K-Means Clustering approach known as "K-Nearest Neighbors" was introduced. To tune the hyperparameter $k$ for this algorithm, classifiers tested on data from 2020 were compared with respect to $\mu_{pv != av}$. Note that 'pv' and 'av' represent the predicted and actual values (e.g., the predictions and test dataset, respectively). The plot on the following page shows that a value of $k = 6$ minimized this function and was thus used in the determination of postseason berths.
+In addition to an SVM, a K-Means Clustering approach known as "K-Nearest Neighbors" was introduced. To tune the hyperparameter $k$ for this algorithm, classifiers tested on data from 2020 were compared with respect to $\mu_{pv != av}$. Note that 'pv' and 'av' represent the predicted and actual values (e.g., the predictions and test dataset, respectively). Figure 13 on the following page shows that a value of $k = 6$ minimized this function and was thus used in the determination of postseason berths.
 
 ![](../Data/Images/knn_plot.png)
-\begin{center} Figure 4: Plot of Hyperparameter Tuning for Postseason-Berth KNN Classifier) \end{center}
+\begin{center} Figure 13: Plot of Hyperparameter Tuning for Postseason-Berth KNN Classifier) \end{center}
 
 When validated using data from 2020, a similar scenario occurred to that when using the SVM classifier; as a result, 49 teams received automatic berths, and 19 were chosen among those initially not selected.
 
@@ -148,7 +308,7 @@ Finally, an Artificial Neural Network was included for determining postseason el
 The model structure is defined below (taken from output of the .py file from where the model originates).
 
 ![](../Data/Images/post_model_structure.png)
-\begin{center} Figure 5: Table of Postseason ANN Structure) \end{center}
+\begin{center} Figure 14: Table of Postseason ANN Structure) \end{center}
 
 \subsubsection{Field Generation}
 
@@ -234,17 +394,17 @@ The following table, beginning on the next page, shows the rankings of the 43 au
 | South Carolina     | 14  | 16  | 16  | 15.33333 | 23   | 16   |
 | VCU                | 15  | 16  | 16  | 15.66667 | 24   | 16   |
 | Louisiana Tech     | 16  | 16  | 15  | 15.66667 | 25   | 16   |
-\begin{center} Figure 6: Rankings and Seeds of Simulated 2020 Tournament Teams \end{center}
+\begin{center} Figure 15: Rankings and Seeds of Simulated 2020 Tournament Teams \end{center}
 
 \subsection{Tournament Simulation}
 
-In order to simulate the tournament with the above list of teams, a method to determine a victor for any given contest must first be derived. Using the "TEAM", "Team1", and "Team2" columns from the datasets shown in Figures 1 and 2 as primary keys, the following process was carried out:
+In order to simulate the tournament with the above list of teams, a method to determine a victor for any given contest must first be derived. Using the "TEAM", "Team1", and "Team2" columns from the datasets shown in Figures 9 and 10 as primary keys, the following process was carried out:
 
-* For all games from 2013-2019, compute the differences of all quantitative statistics (except 'SEED' and other categorical variables) between the two teams that competed in each contest (Figure 7).
+* For all games from 2013-2019, compute the differences of all quantitative statistics (except 'SEED' and other categorical variables) between the two teams that competed in each contest (Figure 16, below).
 
 * Create a regression model that predicts the difference in score (along with its sign, as it indicates which team emerged victorious).
 
-* For teams in Figure 6, create and simulate games according to whether or not the regression model returned a positive or negative value (the magnitude represents a quasi-"betting line", how many points one team is expected to win by). Repeat this step for each region of the tournament and record the victor(s).
+* For teams in Figure 15, create and simulate games according to whether or not the regression model returned a positive or negative value (the magnitude represents a quasi-"betting line", how many points one team is expected to win by). Repeat this step for each region of the tournament and record the victor(s).
 
 The regression model initially contained all of the aforementioned differences, and was minimized using stepwise regression under the *BIC* criterion. Ultimately, the following regression equation was used to simulate the 2020 Tournament: *ScoreDiff ~ ADJOE_DIFF + ADJDE_DIFF + TORD_DIFF + WAB_DIFF*.
 
@@ -257,9 +417,9 @@ Figure 7 includes sample differences from the games depicted in Figure 1 (the fi
 | 3.6         | \-10.1      | 0.188         | \-5.1        | \-1.7        |
 | 5.5         | \-7.8       | 0.219         | 1.1          | 0.1          |
 | 5.5         | \-7.8       | 0.219         | 1.1          | 0.1          | 
-\begin{center} Figure 7: Differenced Statistics for Games from Figure 1 (most columns not depicted due to cutoff). \end{center}
+\begin{center} Figure 16: Differenced Statistics for Games from Figure 1 (most columns not depicted due to cutoff). \end{center}
 
-The difference statistics were created and passed to the regression model for each simulated game. Figure 8 shows the results of simulating each round of the tournament, including the victor and the difference in score (negative values indicate an "upset" victory).
+The difference statistics were created and passed to the regression model for each simulated game. Figure 17 shows the results of simulating each round of the tournament, including the victor and the difference in score (negative values indicate an "upset" victory).
 
 | ID                             | DIFF  | TEAM          | ROUND                          |
 | ------------------------------ | ----- | ------------- | ------------------------------ |
@@ -328,7 +488,16 @@ The difference statistics were created and passed to the regression model for ea
 | Gonzaga-Dayton                 | 1.6   | Gonzaga       | Final Four (East vs. West)     |
 | Kansas-Baylor                  | 0.7   | Kansas        | Final Four (South vs. Midwest) |
 | Gonzaga-Kansas                 | 2.2   | Gonzaga       | Championship Game              |
-\begin{center} Figure 8: Results of Simulating 2020 Tournament \end{center}
+\begin{center} Figure 17: Results of Simulating 2020 Tournament \end{center}
 
 Of particular interest are the games in which the regression model predicted an upset victory; there are a number of them occurring in the First Round (the "Round of 64"), one of emphasis being No. 13 Oklahoma St.'s victory over No. 5 Virginia in the West Region. Over time, however, *higher seeds* were predicted to prevail, with all four one-seeds reaching the Final Four games and Gonzaga emerging as the Champion. The authors would like to acknowledge this conclusion as an interesting one, considering that Gonzaga has reached the title game twice in the last 4 tournaments, losing most recently in 2021 to Baylor, and four years prior to North Carolina [in the Tar Heels' "Redemption Season", as many newspapers soon nicknamed it]. 
 
+\section{Conclusion}
+
+To recap, our group was focused on finding out what makes a championship basketball team -- statistically! Our first question of interest was: what variables contribute most significantly to a high win rate, specially focusing on the adjusted offense and defensive efficiency (ADJOE & ADJDE). While our second question (or goal) of interest was to attempt to use the data we had to simulate the 2020 college basketball playoffs.
+
+To summarize our findings, for our first question, we found that ADJOE & ADJDE has a statistically significant interaction, and statistically significant by themselves; the methodology we used to determine these results were ANOVA & Lasso. For our second question, we found out the we could indeed simulate the 2020 college basketball playoff field, but not very effectively with our current statistical skill-set; while our postseason berth models had high accuracy (e.g., the SVM had ~*92%*, the ANN recorded ~*91.5*%), seed classification models did not (e.g., an ANN classifier predicted ~*30*% of the seeds of a test dataset correctly), the seed classifiers rarely agreed unanimously on seeding for most teams (outside of 1-seeds such as Gonzaga), which led to the use of average seeds to ultimately set the field. The methodological procedures included in simulating this tournament were SVMs, k-Means Clustering (i.e. K-Nearest Neighbors), and Artificial Neural Networks.
+
+There does exist some room for improvement with respect to data collection, our group found it very difficult to find data on the strength of schedule for most teams (this was accomplished, however scraping and cleaning nine different datasets was an incredibly tedious process); this was not the only problem we ran into...a lack of computing power did not help when trying to run our neural network (which can simply be solved in the future with the use of a more powerful GPU). This work could be expanded on by others in the future with a deeper analysis into two other important variables that contribute to a high win rate: TOR (turnover percentage allowed) and ORB (offensive rebound rate); these two variables exhibited similar behavior to ADJOE & ADJDE, as they were also significant by themselves and when interacting with each other, but they did not have significant interactions with ADJDE or ADJOE!
+
+Our group thought of three real world implications for our analysis; those being: sports betting (i.e. winning the office bracket competition), team development / improvement, and a potential new ranking methodology. An obvious extension of this analysis into the real world is for sports betting; with rigorous enough models, one could predict the outcome of games, and therefore capitalize on a betting opportunity, which many do! With respect for team development and improvement, statistical analysis of a team can uncover what a team is doing well and what they are struggling with. Once a team figures out what they are struggling with they can focus on that variable to potentially improve their overall win rate. And finally, with regards to ranking methodology, a new model can be created from this type of statistical analysis to develop a more accurate and precise ranking measure, that is based on objective statistics and not subjective committees!
