@@ -1,3 +1,6 @@
+**NOTE TO INSTRUCTORS**
+Download the *FinalProduct.zip* folder and follow the README in it. Any questions: email [here](halljc76@live.unc.edu)
+
 March Madness: "What Makes a Champion?"
 
 Welcome to the group repository for our STOR 320 Final Project!
